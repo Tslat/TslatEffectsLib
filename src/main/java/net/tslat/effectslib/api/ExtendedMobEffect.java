@@ -2,6 +2,7 @@ package net.tslat.effectslib.api;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -40,11 +41,6 @@ public class ExtendedMobEffect extends MobEffect {
 			component.append(" ").append(Component.translatable("enchantment.level." + instance.getAmplifier() + 1));
 
 		return component;
-	}
-
-	@Override
-	public final Component getDisplayName() {
-		return getDisplayName(null);
 	}
 
 	/**
@@ -88,6 +84,7 @@ public class ExtendedMobEffect extends MobEffect {
 
 	/**
 	 * Check whether this effect should tick on the current tick.
+	 * @see MobEffect#isDurationEffectTick(int, int)
 	 * @param effectInstance Effect instance for the effect. Marked with nullable so that the vanilla methods can be routed through for completeness
 	 * @param entity The entity the effect is ticking on
 	 * @param ticksRemaining The ticks remaining on this effect before it expires
@@ -96,30 +93,6 @@ public class ExtendedMobEffect extends MobEffect {
 	 */
 	public boolean shouldTickEffect(@Nullable MobEffectInstance effectInstance, @Nullable LivingEntity entity, int ticksRemaining, int amplifier) {
 		return false;
-	}
-
-	@Override
-	public final void applyEffectTick(LivingEntity entity, int amplifier) {
-		tick(entity, null, amplifier);
-	}
-
-	/**
-	 * Disabled, use {@link ExtendedMobEffect#onApplication(MobEffectInstance, Entity, Entity, LivingEntity, int, double)}
-	 */
-	@Override
-	public final void applyInstantenousEffect(@Nullable Entity source, @Nullable Entity indirectSource, LivingEntity entity, int amplifier, double sourceModifier) {
-		onApplication(null, source, indirectSource, entity, amplifier, sourceModifier);
-
-		if (!isInstantenous())
-			tick(entity, null, amplifier);
-	}
-
-	/**
-	 * Disabled, use {@link ExtendedMobEffect#shouldTickEffect(MobEffectInstance, LivingEntity, int, int)}
-	 */
-	@Override
-	public final boolean isDurationEffectTick(int ticksRemaining, int amplifier) {
-		return shouldTickEffect(null, null, ticksRemaining, amplifier);
 	}
 
 	@Override
@@ -148,10 +121,61 @@ public class ExtendedMobEffect extends MobEffect {
 		return baseModifierAmount * (effectAmplifier + 1);
 	}
 
-	@Override
-	public final double getAttributeModifierValue(int amplifier, AttributeModifier modifier) {
-		return getAttributeModifierValue(null, null, modifier.getAmount(), amplifier);
+	/**
+	 * Handle an incoming attack on an entity that has this effect active. <br>
+	 * Return false to prevent the attack entirely.
+	 * @param entity The entity with this effect active
+	 * @param effectInstance The effect instance applied to the entity
+	 * @param source The DamageSource for the attack
+	 * @param amount The base amount of damage being dealt
+	 * @return Whether the attack should proceed or not
+	 */
+	public boolean beforeIncomingAttack(LivingEntity entity, MobEffectInstance effectInstance, DamageSource source, float amount) {
+		return true;
 	}
+
+	/**
+	 * Adjust the attack damage for an attack an entity with this effect will receive.
+	 * @param entity The entity that is being attacked
+	 * @param effectInstance The effect instance applied to the victim
+	 * @param source The DamageSource for the attack
+	 * @param baseAmount The current amount of damage to be dealt
+	 * @return The new amount of damage to be dealt
+	 */
+	public float modifyIncomingAttackDamage(LivingEntity entity, MobEffectInstance effectInstance, DamageSource source, float baseAmount) {
+		return baseAmount;
+	}
+
+	/**
+	 * Adjust the attack damage for an attack that an entity with this effect will perform.
+	 * @param entity The entity that is attacking
+	 * @param target The target of the attack
+	 * @param effectInstance The effect instance applied to the attacking entity
+	 * @param source The DamageSource for the attack
+	 * @param baseAmount The current amount of damage to be dealt
+	 * @return The new amount of damage to be dealt
+	 */
+	public float modifyOutgoingAttackDamage(LivingEntity entity, LivingEntity target, MobEffectInstance effectInstance, DamageSource source, float baseAmount) {
+		return baseAmount;
+	}
+
+	/**
+	 * Trigger an effect or otherwise listen for an attack that has successfully received by an entity with this effect active.
+	 * @param entity The entity being attacked
+	 * @param effectInstance The effect instance applied to the victim
+	 * @param source The DamageSource for the attack
+	 * @param amount The amount of being dealt
+	 */
+	public void afterIncomingAttack(LivingEntity entity, MobEffectInstance effectInstance, DamageSource source, float amount) {}
+
+	/**
+	 * Trigger an effect or otherwise listen for an attack that has successfully been dealt by an entity with this effect active.
+	 * @param entity The entity that is attacking
+	 * @param effectInstance The effect instance applied to the attacker
+	 * @param source The DamageSource for the attack
+	 * @param amount The amount of being dealt
+	 */
+	public void afterOutgoingAttack(LivingEntity entity, LivingEntity victim, MobEffectInstance effectInstance, DamageSource source, float amount) {}
 
 	/**
 	 * Return an overlay renderer for this effect. Called when the effect is present on the entity, used for rendering screen effects
@@ -161,5 +185,50 @@ public class ExtendedMobEffect extends MobEffect {
 	@Nullable
 	public EffectOverlayRenderer getOverlayRenderer() {
 		return null;
+	}
+
+	// START DISABLED METHOD HANDLES
+
+	/**
+	 * Disabled, use {@link ExtendedMobEffect#getDisplayName(MobEffectInstance)}
+	 */
+	@Override
+	public final Component getDisplayName() {
+		return getDisplayName(null);
+	}
+
+	/**
+	 * Disabled, use {@link ExtendedMobEffect#tick(LivingEntity, MobEffectInstance, int)}
+	 */
+	@Override
+	public final void applyEffectTick(LivingEntity entity, int amplifier) {
+		tick(entity, null, amplifier);
+	}
+
+	/**
+	 * Disabled, use {@link ExtendedMobEffect#onApplication(MobEffectInstance, Entity, Entity, LivingEntity, int, double)}
+	 */
+	@Override
+	public final void applyInstantenousEffect(@Nullable Entity source, @Nullable Entity indirectSource, LivingEntity entity, int amplifier, double sourceModifier) {
+		onApplication(null, source, indirectSource, entity, amplifier, sourceModifier);
+
+		if (!isInstantenous())
+			tick(entity, null, amplifier);
+	}
+
+	/**
+	 * Disabled, use {@link ExtendedMobEffect#shouldTickEffect(MobEffectInstance, LivingEntity, int, int)}
+	 */
+	@Override
+	public final boolean isDurationEffectTick(int ticksRemaining, int amplifier) {
+		return shouldTickEffect(null, null, ticksRemaining, amplifier);
+	}
+
+	/**
+	 * Disabled, use {@link ExtendedMobEffect#getAttributeModifierValue(LivingEntity, Attribute, double, int)}
+	 */
+	@Override
+	public final double getAttributeModifierValue(int amplifier, AttributeModifier modifier) {
+		return getAttributeModifierValue(null, null, modifier.getAmount(), amplifier);
 	}
 }

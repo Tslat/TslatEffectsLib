@@ -4,7 +4,9 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "tslateffectslib.refmap.json",
   "mixins": [
-    "common.MobEffectInstanceMixin"
+    "common.LivingEntityMixin",
+    "common.MobEffectInstanceMixin",
+    "common.PlayerMixin"
   ],
   "client": [
     "client.EffectRenderingInventoryScreenMixin",
