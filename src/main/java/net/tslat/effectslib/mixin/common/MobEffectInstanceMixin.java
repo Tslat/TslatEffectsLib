@@ -4,8 +4,10 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.tslat.effectslib.api.ExtendedMobEffect;
+import net.tslat.effectslib.api.ExtendedMobEffectHolder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -15,7 +17,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * Handle the various {@link MobEffectInstance callbacks}
  */
 @Mixin(MobEffectInstance.class)
-public abstract class MobEffectInstanceMixin {
+public abstract class MobEffectInstanceMixin implements ExtendedMobEffectHolder {
+	@Unique
+	Object data;
+
 	@Shadow
 	int duration;
 	@Shadow
@@ -59,5 +64,15 @@ public abstract class MobEffectInstanceMixin {
 	public void checkEffectTick(LivingEntity entity, Runnable runnable, CallbackInfoReturnable<Boolean> callback) {
 		if (this.duration > 0 && this.getEffect() instanceof ExtendedMobEffect extendedEffect && extendedEffect.shouldTickEffect((MobEffectInstance)(Object)this, entity, this.duration, this.amplifier))
 			applyEffect(entity);
+	}
+
+	@Override
+	public Object setExtendedMobEffectData() {
+		return data;
+	}
+
+	@Override
+	public void getExtendedMobEffectData(Object data) {
+		this.data = data;
 	}
 }

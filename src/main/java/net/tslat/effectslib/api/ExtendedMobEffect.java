@@ -21,7 +21,9 @@ import java.util.Map;
  * Note that the additional methods added here are also passthroughs for the vanilla methods where applicable.
  * This will cause some parameters to be marked with {@code @Nullable} where they would not be able to be provided when passing through.
  * This should only occur when another mod is calling the vanilla methods, which should almost never happen. <br>
- * In the event it does however, it might be worth falling back to a default behaviour for best compatibility. Until Forge or Mojang fixes MobEffects themselves, this is the best we can do.
+ * In the event it does however, it might be worth falling back to a default behaviour for best compatibility. Until Forge or Mojang fixes MobEffects themselves, this is the best we can do.<br>
+ * <br>
+ * An alternate approach this would have been to inject this into MobEffect directly via interface, however that doesn't actually offer any functional benefit, and it eliminates the possibility of marking <i>final</i> on the now-unused vanilla methods.
  */
 public class ExtendedMobEffect extends MobEffect {
 	protected ExtendedMobEffect(MobEffectCategory category, int color) {
@@ -52,26 +54,32 @@ public class ExtendedMobEffect extends MobEffect {
 	public void tick(LivingEntity entity, @Nullable MobEffectInstance effectInstance, int amplifier) {}
 
 	/**
+	 * Check for whether an instance with this effect can be applied to an entity or not.
+	 * @param entity The entity to be applied to
+	 * @param effectInstance The effect instance
+	 * @return true if the effect can apply, false if not
+	 */
+	public boolean canApply(LivingEntity entity, MobEffectInstance effectInstance) {
+		return true;
+	}
+
+	/**
 	 * Handle for when the effect is first applied to an entity. Useful for triggering additional effects or up-front additional handling.
 	 * @param effectInstance Effect instance for the effect. Marked with nullable so that the vanilla methods can be routed through for completeness
 	 * @param source The direct entity source of the effect, if applicable. E.G. The player drinking a potion, the {@link net.minecraft.world.entity.projectile.ThrownPotion} entity
-	 * @param indirectSource The indirect source entity of the effect, if applicable. E.G. The thrower of a splash potion
 	 * @param entity The entity the effect is applying to
 	 * @param amplifier The amplifier for the current effect instance. Included for compatibility with vanilla's methods
-	 * @param sourceModifier An optionally usable modifier to handle the strength/efficacy of an effect, based on the source it came from. E.G. Distance from a splash potion
 	 */
-	public void onApplication(@Nullable MobEffectInstance effectInstance, @Nullable Entity source, @Nullable Entity indirectSource, LivingEntity entity, int amplifier, double sourceModifier) {}
+	public void onApplication(@Nullable MobEffectInstance effectInstance, @Nullable Entity source, LivingEntity entity, int amplifier) {}
 
 	/**
 	 * Handle for when the effect is being applied to an entity that already has the effect applied. This is called before the game checks whether the new effect will apply at all.
 	 * @param existingEffectInstance The existing MobEffectInstance that the entity already has in place
 	 * @param newEffectInstance The new MobEffectInstance that is pending application
 	 * @param entity The entity the effect is applying to
-	 * @param source The direct entity source of the effect, if applicable. E.G. The player drinking a potion, the {@link net.minecraft.world.entity.projectile.ThrownPotion} entity
-	 * @return The effect instance to apply in place of the one that was going to be applied, or null to use the default vanilla functionality
+	 * @return The effect instance to apply in place of the one that was going to be applied
 	 */
-	@Nullable
-	public MobEffectInstance onUpdated(MobEffectInstance existingEffectInstance, MobEffectInstance newEffectInstance, LivingEntity entity, @Nullable Entity source) {
+	public MobEffectInstance onReapplication(MobEffectInstance existingEffectInstance, MobEffectInstance newEffectInstance, LivingEntity entity) {
 		return null;
 	}
 
@@ -210,7 +218,7 @@ public class ExtendedMobEffect extends MobEffect {
 	 */
 	@Override
 	public final void applyInstantenousEffect(@Nullable Entity source, @Nullable Entity indirectSource, LivingEntity entity, int amplifier, double sourceModifier) {
-		onApplication(null, source, indirectSource, entity, amplifier, sourceModifier);
+		onApplication(null, source, entity, amplifier);
 
 		if (!isInstantenous())
 			tick(entity, null, amplifier);
