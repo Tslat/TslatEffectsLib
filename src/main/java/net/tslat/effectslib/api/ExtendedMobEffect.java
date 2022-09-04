@@ -43,7 +43,7 @@ public class ExtendedMobEffect extends MobEffect {
 		MutableComponent component = Component.translatable(this.getDescriptionId());
 
 		if (instance != null && instance.getAmplifier() > 0 && instance.getAmplifier() < 10)
-			component.append(" ").append(Component.translatable("enchantment.level." + instance.getAmplifier() + 1));
+			component.append(" ").append(Component.translatable("enchantment.level." + (instance.getAmplifier() + 1)));
 
 		return component;
 	}
