@@ -12,8 +12,11 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -60,6 +63,16 @@ public class ExtendedMobEffect extends MobEffect {
 	 * @return true if the effect can apply, false if not
 	 */
 	public boolean canApply(LivingEntity entity, MobEffectInstance effectInstance) {
+		return true;
+	}
+
+	/**
+	 * Check for whether another effect should be applied or not. This can be used for mutual-exclusivity between effects
+	 * @param entity The entity with this effect active
+	 * @param otherEffectInstance The new effect instance attempting application
+	 * @return Whether the new effect should apply or not
+	 */
+	public boolean canApplyOther(LivingEntity entity, MobEffectInstance otherEffectInstance) {
 		return true;
 	}
 
@@ -186,6 +199,17 @@ public class ExtendedMobEffect extends MobEffect {
 	public void afterOutgoingAttack(LivingEntity entity, LivingEntity victim, MobEffectInstance effectInstance, DamageSource source, float amount) {}
 
 	/**
+	 * Handle whether an effect should be cured by a player or entity consuming this item.
+	 * @param effectInstance The MobEffectInstance to be cured
+	 * @param stack The ItemStack of the item being consumed
+	 * @param entity The entity consuming the item
+	 * @return true if the effect should be cured by consuming this item
+	 */
+	public boolean shouldCureEffect(MobEffectInstance effectInstance, ItemStack stack, LivingEntity entity) {
+		return stack.getItem() == Items.MILK_BUCKET;
+	}
+
+	/**
 	 * Return an overlay renderer for this effect. Called when the effect is present on the entity, used for rendering screen effects
 	 * Clientside code must be handled outside of the MobEffect class for server-safety
 	 * @return The renderer
@@ -238,5 +262,14 @@ public class ExtendedMobEffect extends MobEffect {
 	@Override
 	public final double getAttributeModifierValue(int amplifier, AttributeModifier modifier) {
 		return getAttributeModifierValue(null, null, modifier.getAmount(), amplifier);
+	}
+
+	/**
+	 * Not disabled, but you should be using {@link ExtendedMobEffect#shouldCureEffect(MobEffectInstance, ItemStack, LivingEntity)} instead
+	 * @return The list of items that this effect should be cured by
+	 */
+	@Override
+	public List<ItemStack> getCurativeItems() {
+		return List.of();
 	}
 }

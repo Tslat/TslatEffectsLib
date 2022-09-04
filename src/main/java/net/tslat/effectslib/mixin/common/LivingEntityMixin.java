@@ -5,6 +5,8 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.tslat.effectslib.api.ExtendedMobEffect;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -17,17 +19,21 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
-	@Shadow @Final private Map<MobEffect, MobEffectInstance> activeEffects;
-
 	@Shadow private boolean effectsDirty;
+
+	@Shadow @Final private Map<MobEffect, MobEffectInstance> activeEffects;
 
 	@Shadow protected abstract void onEffectAdded(MobEffectInstance pInstance, @Nullable Entity pEntity);
 
-	@Shadow public abstract boolean canBeAffected(MobEffectInstance pEffectInstance);
+	@Shadow protected abstract void onEffectRemoved(MobEffectInstance pEffectInstance);
+
+	@Shadow public abstract Collection<MobEffectInstance> getActiveEffects();
 
 	@ModifyArg(
 			method = "actuallyHurt",
@@ -158,5 +164,39 @@ public abstract class LivingEntityMixin {
 	public void canApplyEffect(MobEffectInstance effectInstance, CallbackInfoReturnable<Boolean> callback) {
 		if (effectInstance.getEffect() instanceof ExtendedMobEffect extendedEffect && !extendedEffect.canApply((LivingEntity)(Object)this, effectInstance))
 			callback.setReturnValue(false);
+
+		if (!getActiveEffects().isEmpty()) {
+			for (MobEffectInstance otherInstance : getActiveEffects()) {
+				if (otherInstance.getEffect() instanceof ExtendedMobEffect extendedEffect && !extendedEffect.canApplyOther((LivingEntity)(Object)this, otherInstance))
+					callback.setReturnValue(false);
+			}
+		}
+	}
+
+	@Inject(
+			method = "addEatEffect",
+			at = @At(
+					value = "HEAD"
+			)
+	)
+	public void onFoodConsumption(ItemStack food, Level level, LivingEntity entity, CallbackInfo callback) {
+		if (food.isEdible())
+			checkEffectCuring(food, entity);
+	}
+
+	private void checkEffectCuring(ItemStack food, LivingEntity entity) {
+		if (entity.getActiveEffectsMap().isEmpty())
+			return;
+
+		for (Iterator<Map.Entry<MobEffect, MobEffectInstance>> iterator = this.activeEffects.entrySet().iterator(); iterator.hasNext(); ) {
+			MobEffectInstance effectInstance = iterator.next().getValue();
+
+			if (effectInstance.getEffect() instanceof ExtendedMobEffect extendedEffect && extendedEffect.shouldCureEffect(effectInstance, food, entity)) {
+				onEffectRemoved(effectInstance);
+				iterator.remove();
+
+				this.effectsDirty = true;
+			}
+		}
 	}
 }
