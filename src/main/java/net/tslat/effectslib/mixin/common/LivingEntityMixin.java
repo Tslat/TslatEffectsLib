@@ -199,4 +199,28 @@ public abstract class LivingEntityMixin {
 			}
 		}
 	}
+
+	@Inject(
+			method = "tickEffects",
+			at = @At(
+					value = "INVOKE_ASSIGN",
+					target = "Lnet/minecraft/network/syncher/SynchedEntityData;get(Lnet/minecraft/network/syncher/EntityDataAccessor;)Ljava/lang/Object;"
+			),
+			cancellable = true
+	)
+	protected void onEffectsTick(CallbackInfo callback) {
+		if (((LivingEntity)(Object)this).level.isClientSide() && !doCustomEffectParticles((LivingEntity)(Object)this))
+			callback.cancel();
+	}
+
+	private boolean doCustomEffectParticles(LivingEntity entity) {
+		boolean continueVanilla = false;
+
+		for (MobEffectInstance effect : this.activeEffects.values()) {
+			if (!(effect.getEffect() instanceof ExtendedMobEffect extendedEffect) || !extendedEffect.doClientSideEffectTick(effect, entity))
+				continueVanilla = true;
+		}
+
+		return continueVanilla;
+	}
 }

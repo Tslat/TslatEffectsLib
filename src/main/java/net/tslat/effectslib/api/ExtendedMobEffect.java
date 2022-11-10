@@ -219,6 +219,16 @@ public class ExtendedMobEffect extends MobEffect {
 		return null;
 	}
 
+	/**
+	 * Handle a client-side tick for the effect, usually used for custom handling particle effects
+	 * @param effectInstance The effect instance
+	 * @param entity The entity the effect is applied to
+	 * @return Whether this effect has handled itself and wants to skip the vanilla particle functionality
+	 */
+	public boolean doClientSideEffectTick(MobEffectInstance effectInstance, LivingEntity entity) {
+		return false;
+	}
+
 	// START DISABLED METHOD HANDLES
 
 	/**
@@ -238,7 +248,7 @@ public class ExtendedMobEffect extends MobEffect {
 	}
 
 	/**
-	 * Disabled, use {@link ExtendedMobEffect#onApplication(MobEffectInstance, Entity, Entity, LivingEntity, int, double)}
+	 * Disabled, use {@link ExtendedMobEffect#onApplication(MobEffectInstance, Entity, LivingEntity, int)}
 	 */
 	@Override
 	public final void applyInstantenousEffect(@Nullable Entity source, @Nullable Entity indirectSource, LivingEntity entity, int amplifier, double sourceModifier) {

@@ -5,7 +5,7 @@ issueTrackerURL="https://github.com/Tslat/TslatEffectsLib/issues"
 
 [[mods]]
 modId="tslateffectslib"
-version="1.0"
+version="1.1"
 displayName="Tslat EffectsLib"
 #updateJSONURL="https://change.me.example.invalid/updates.json"
 #logoFile="logo.png"
