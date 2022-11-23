@@ -29,7 +29,7 @@ import java.util.Map;
  * An alternate approach this would have been to inject this into MobEffect directly via interface, however that doesn't actually offer any functional benefit, and it eliminates the possibility of marking <i>final</i> on the now-unused vanilla methods.
  */
 public class ExtendedMobEffect extends MobEffect {
-	protected ExtendedMobEffect(MobEffectCategory category, int color) {
+	public ExtendedMobEffect(MobEffectCategory category, int color) {
 		super(category, color);
 	}
 
@@ -93,7 +93,7 @@ public class ExtendedMobEffect extends MobEffect {
 	 * @return The effect instance to apply in place of the one that was going to be applied
 	 */
 	public MobEffectInstance onReapplication(MobEffectInstance existingEffectInstance, MobEffectInstance newEffectInstance, LivingEntity entity) {
-		return null;
+		return existingEffectInstance;
 	}
 
 	/**
