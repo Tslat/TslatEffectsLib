@@ -68,7 +68,7 @@ public abstract class MobEffectInstanceMixin implements ExtendedMobEffectHolder 
 
 	@Override
 	public Object setExtendedMobEffectData() {
-		return data;
+		return this.data;
 	}
 
 	@Override
