@@ -1,0 +1,40 @@
+{
+    "schemaVersion": 1,
+    "id": "tslateffectslib",
+    "version": "${version}",
+  
+    "name": "Tslat EffectsLib",
+    "description": "A library mod for better mob effects",
+    "authors": [
+      "Tslat"
+    ],
+    "contact": {
+      "homepage": "https://www.curseforge.com/minecraft/mc-mods/tslateffectslib",
+      "sources": "https://github.com/Tslat/TslatEffectsLib"
+    },
+  
+    "license": "CC0-1.0",
+    "icon": "logo.png",
+  
+    "environment": "*",
+    "entrypoints": {
+      "main": [
+        "net.tslat.effectslib.TslatEffectsLib"
+      ]
+    },
+    "mixins": [
+      "tslateffectslib.mixins.json"
+    ],
+    "accessWidener": "tslateffectslib.accesswidener",
+  
+    "depends": {
+      "fabricloader": ">=0.14",
+      "fabric": "*",
+      "minecraft": "1.19.x",
+      "java": ">=17"
+    },
+    "suggests": {
+      "another-mod": "*"
+    }
+  }
+  

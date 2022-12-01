@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.tslat.effectslib.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "tslateffectslib.refmap.json",
+  "mixins": [
+    "common.LivingEntityMixin",
+    "common.MobEffectInstanceMixin",
+    "common.PlayerMixin"
+  ],
+  "client": [
+    "client.EffectRenderingInventoryScreenMixin",
+    "client.GameRendererMixin"
+  ]
+}

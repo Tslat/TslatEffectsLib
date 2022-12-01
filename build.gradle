@@ -1,130 +1,47 @@
-plugins {
-    id 'net.minecraftforge.gradle' version '5.1.+'
-	id 'org.spongepowered.mixin' version '0.7-SNAPSHOT'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-}
+subprojects {
+    apply plugin: 'java'
 
-version = mod_version
-group = 'net.tslat.effectslib'
-archivesBaseName = 'TslatEffectsLib-Forge'
-
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-
-minecraft {
-    mappings channel: mappings_channel, version: mappings_version
-	accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-
-    runs {
-        client {
-            workingDirectory project.file('run')
-			
-            taskName 'Client'
-			
-            property 'forge.logging.console.level', 'debug'
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
-            property 'forge.enabledGameTestNamespaces', 'tslateffectslib'
-            arg "-mixin.config="+modid+".mixins.json"
-
-            mods {
-                tslateffectslib {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        server {
-            workingDirectory project.file('run')
-			
-            taskName 'Server'
-			
-            property 'forge.logging.console.level', 'debug'
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${buildDir}/createSrgToMcp/output.srg"
-            property 'forge.enabledGameTestNamespaces', 'tslateffectslib'
-            arg "-mixin.config="+modid+".mixins.json"
-
-            mods {
-                tslateffectslib {
-                    source sourceSets.main
-                }
-            }
-        }
-
-
-        gameTestServer {
-            workingDirectory project.file('run')
-			
-            taskName 'Game Tests'
-
-            property 'forge.enabledGameTestNamespaces', 'tslateffectslib'
-            arg "-mixin.config="+modid+".mixins.json"
-
-            mods {
-                tslateffectslib {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        data {
-            workingDirectory project.file('run')
-			
-			taskName 'Datagen'
-
-            args '--mod', 'tslateffectslib', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/'), "-mixin.config="+modid+".mixins.json"
-
-            mods {
-                tslateffectslib {
-                    source sourceSets.main
-                }
-            }
+    java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+    java.withSourcesJar()
+    java.withJavadocJar()
+        
+    jar {
+        manifest {
+            attributes([
+                'Specification-Title'     : mod_name,
+                'Specification-Vendor'    : mod_author,
+                'Specification-Version'   : project.jar.archiveVersion,
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_author,
+                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                'Timestamp'              : System.currentTimeMillis(),
+                'Built-On-Java'           : "${System.getProperty('java.vm.version')} (${System.getProperty('java.vm.vendor')})",
+                'Built-On-Minecraft'      : minecraft_version
+            ])
         }
     }
-}
 
-mixin {
-    add sourceSets.main, "${modid}.refmap.json"
-}
+    repositories {
+        mavenCentral()
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
+        maven {
+            name = 'Sponge / Mixin'
+            url = 'https://repo.spongepowered.org/repository/maven-public/'
+        }
 
-artifacts {
-    archives sourcesJar
-}
-
-sourceSets.main.resources { srcDir 'src/generated/resources' }
-
-repositories {}
-
-dependencies {
-    minecraft "net.minecraftforge:forge:$project.minecraft_version-$project.forge_version"
-	
-	if (System.getProperty("idea.sync.active") != "true") {
-        annotationProcessor 'org.spongepowered:mixin:0.8.3:processor'
+        maven {
+            name = "Forge"
+            url = 'https://maven.minecraftforge.net'
+        }
     }
-}
 
-jar {
-    manifest {
-        attributes([
-                "Specification-Title"     : "tslateffectslib",
-                "Specification-Vendor"    : "Tslat",
-                "Specification-Version"   : "1",
-                "Implementation-Title"    : project.name,
-                "Implementation-Version"  : project.jar.archiveVersion,
-                "Implementation-Vendor"   : "Tslat",
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-                "MixinConfigs": "${modid}.mixins.json"
-        ])
+    tasks.withType(JavaCompile).configureEach {
+        it.options.encoding = 'UTF-8'
+        it.options.release = 17
     }
-}
 
-jar.finalizedBy('reobfJar')
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
+    tasks.withType(GenerateModuleMetadata) {
+        enabled = false
+    }
 }
