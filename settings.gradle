@@ -19,3 +19,4 @@ pluginManagement {
 
 rootProject.name = 'TslatEffectsLib'
 include("Common", "Fabric", "Forge")
+

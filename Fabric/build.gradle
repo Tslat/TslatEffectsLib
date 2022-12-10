@@ -32,9 +32,12 @@ loom {
         }
     }
 
+    mixin {
+        defaultRefmapName.convention("${mod_id}.refmap.json")
+    }
+
     accessWidenerPath = file("src/main/resources/tslateffectslib.accesswidener")
 }
-
 
 processResources {
     from project(":Common").sourceSets.main.resources

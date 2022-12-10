@@ -13,7 +13,7 @@
       "sources": "https://github.com/Tslat/TslatEffectsLib"
     },
   
-    "license": "CC0-1.0",
+    "license": "MIT",
     "icon": "logo.png",
   
     "environment": "*",
@@ -29,7 +29,6 @@
   
     "depends": {
       "fabricloader": ">=0.14",
-      "fabric": "*",
       "minecraft": "1.19.x",
       "java": ">=17"
     },

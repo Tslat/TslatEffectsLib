@@ -89,7 +89,7 @@ public abstract class LivingEntityMixin {
 			method = "actuallyHurt",
 			at = @At(
 					value = "INVOKE_ASSIGN",
-					target = "Lnet/minecraftforge/common/ForgeHooks;onLivingDamage(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/damagesource/DamageSource;F)F",
+					target = "Lnet/minecraft/world/entity/LivingEntity;getDamageAfterArmorAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F",
 					shift = At.Shift.BEFORE
 			),
 			remap = false
