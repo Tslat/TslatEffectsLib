@@ -1,11 +1,11 @@
 modLoader="javafml"
 loaderVersion="[44,)"
-license="MPL 2.0"
+license="MIT"
 issueTrackerURL="https://github.com/Tslat/TslatEffectsLib/issues"
 
 [[mods]]
 modId="tslateffectslib"
-version="1.4"
+version="1.4.1"
 displayName="Tslat EffectsLib"
 logoFile="logo.png"
 authors="Tslat"
