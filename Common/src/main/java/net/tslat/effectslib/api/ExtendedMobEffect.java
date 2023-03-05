@@ -16,12 +16,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.Map;
 
 /**
- * Extension class of MobEffect. Acts as the base for all effects and functions in this library. <br>
- * Note that the additional methods added here are also passthroughs for the vanilla methods where applicable.
+ * Extension class of {@link MobEffect}. Acts as the base for all effects and functions in this library. <br>
+ * Note that the additional methods added here are also pass-throughs for the vanilla methods where applicable.
  * This will cause some parameters to be marked with {@code @Nullable} where they would not be able to be provided when passing through.
  * This should only occur when another mod is calling the vanilla methods, which should almost never happen. <br>
  * In the event it does however, it might be worth falling back to a default behaviour for best compatibility. Until Forge or Mojang fixes MobEffects themselves, this is the best we can do.<br>
@@ -97,9 +96,10 @@ public class ExtendedMobEffect extends MobEffect {
 	}
 
 	/**
-	 * Handle for when the effect is being removed from an entity. Can be called either when expiring or when being manually removed by some other mechanic.
+	 * Handle for when the effect has been removed from an entity. Can be called either when expiring or when being manually removed by some other mechanic.<br>
+	 * This is called immediately after the {@link AttributeModifier AttributeModifiers} have been removed
 	 * @param effectInstance Effect instance for the effect.
-	 * @param entity The entity the effect is being removed from
+	 * @param entity The entity the effect has been removed from
 	 */
 	public void onRemoval(MobEffectInstance effectInstance, LivingEntity entity) {}
 
@@ -118,7 +118,7 @@ public class ExtendedMobEffect extends MobEffect {
 
 	@Override
 	public final void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
-		for(Map.Entry<Attribute, AttributeModifier> entry : this.attributeModifiers.entrySet()) {
+		for(Map.Entry<Attribute, AttributeModifier> entry : this.getAttributeModifiers().entrySet()) {
 			AttributeInstance attributeInstance = attributeMap.getInstance(entry.getKey());
 
 			if (attributeInstance != null) {
@@ -272,14 +272,5 @@ public class ExtendedMobEffect extends MobEffect {
 	@Override
 	public final double getAttributeModifierValue(int amplifier, AttributeModifier modifier) {
 		return getAttributeModifierValue(null, null, modifier.getAmount(), amplifier);
-	}
-
-	/**
-	 * Not disabled, but you should be using {@link ExtendedMobEffect#shouldCureEffect(MobEffectInstance, ItemStack, LivingEntity)} instead
-	 * @return The list of items that this effect should be cured by
-	 */
-	@Override
-	public List<ItemStack> getCurativeItems() {
-		return List.of();
 	}
 }

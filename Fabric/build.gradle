@@ -9,7 +9,7 @@ dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     mappings loom.layered() {
         officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-1.19.2:2022.11.27@zip")
+        parchment("org.parchmentmc.data:parchment-1.19.3:2022.12.18@zip")
     }
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
@@ -36,7 +36,7 @@ loom {
         defaultRefmapName.convention("${mod_id}.refmap.json")
     }
 
-    accessWidenerPath = file("src/main/resources/tslateffectslib.accesswidener")
+    //accessWidenerPath = file("src/main/resources/tslateffectslib.accesswidener")
 }
 
 processResources {
@@ -54,4 +54,14 @@ tasks.withType(JavaCompile) {
 
 sourcesJar {
     from(project(":Common").sourceSets.main.allSource)
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = archivesBaseName
+            artifact jar
+            artifact sourcesJar
+        }
+    }
 }

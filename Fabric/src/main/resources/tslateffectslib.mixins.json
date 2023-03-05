@@ -7,7 +7,12 @@
   "mixins": [
     "common.LivingEntityMixin",
     "common.MobEffectInstanceMixin",
-    "common.PlayerMixin"
+    "common.PlayerMixin",
+    "common.EnchantmentHelperMixin",
+    "common.AnvilMenuMixin",
+    "common.EnchantCommandMixin",
+    "common.EnchantRandomlyFunctionMixin",
+    "common.EnchantmentMenuMixin"
   ],
   "client": [
     "client.EffectRenderingInventoryScreenMixin",

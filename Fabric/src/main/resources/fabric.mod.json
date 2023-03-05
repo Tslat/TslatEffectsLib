@@ -25,7 +25,6 @@
     "mixins": [
       "tslateffectslib.mixins.json"
     ],
-    "accessWidener": "tslateffectslib.accesswidener",
   
     "depends": {
       "fabricloader": ">=0.14",

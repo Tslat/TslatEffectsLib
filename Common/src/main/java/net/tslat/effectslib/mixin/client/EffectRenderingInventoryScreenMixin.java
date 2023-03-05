@@ -21,7 +21,7 @@ public class EffectRenderingInventoryScreenMixin {
 			),
 			cancellable = true
 	)
-	public void getEffectName(MobEffectInstance effect, CallbackInfoReturnable<Component> callback) {
+	private void getEffectName(MobEffectInstance effect, CallbackInfoReturnable<Component> callback) {
 		if (effect.getEffect() instanceof ExtendedMobEffect extendedEffect)
 			callback.setReturnValue(extendedEffect.getDisplayName(effect));
 	}

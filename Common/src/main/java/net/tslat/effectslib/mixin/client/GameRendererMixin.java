@@ -36,7 +36,7 @@ public class GameRendererMixin {
 					shift = At.Shift.AFTER
 			)
 	)
-	public void renderEffectOverlays(float partialTicks, long nanoTime, boolean renderLevel, CallbackInfo callback) {
+	private void renderEffectOverlays(float partialTicks, long nanoTime, boolean renderLevel, CallbackInfo callback) {
 		doExtendedEffectRenders(this.minecraft.player, partialTicks);
 	}
 
