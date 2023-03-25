@@ -2,6 +2,7 @@ package net.tslat.effectslib.mixin.common;
 
 import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
@@ -32,7 +33,7 @@ public class PlayerMixin {
 			index = 1
 	)
 	private float modifyDamage(DamageSource damageSource, float damage) {
-		if (!damageSource.isBypassMagic()) {
+		if (!damageSource.is(DamageTypeTags.BYPASSES_EFFECTS)) {
 			LivingEntity victim = (LivingEntity)(Object)this;
 			List<Consumer<Float>> attackerCallbacks = new ObjectArrayList<>();
 			List<Consumer<Float>> victimCallbacks = new ObjectArrayList<>();
@@ -46,7 +47,7 @@ public class PlayerMixin {
 					}
 				}
 
-				if (!damageSource.isBypassEnchantments()) {
+				if (!damageSource.is(DamageTypeTags.BYPASSES_ENCHANTMENTS)) {
 					Pair<Integer, Map<ItemStack, List<EnchantmentInstance>>> attackerEnchants = EnchantmentUtil.collectAllEnchantments(attacker, true);
 					int index = 0;
 
@@ -74,7 +75,7 @@ public class PlayerMixin {
 				}
 			}
 
-			if (!damageSource.isBypassEnchantments()) {
+			if (!damageSource.is(DamageTypeTags.BYPASSES_ENCHANTMENTS)) {
 				Pair<Integer, Map<ItemStack, List<EnchantmentInstance>>> victimEnchants = EnchantmentUtil.collectAllEnchantments(victim, true);
 				int index = 0;
 
