@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
-	@Shadow @Final private Minecraft minecraft;
+	@Shadow @Final Minecraft minecraft;
 
 	@Inject(
 			method = "render",
@@ -27,7 +27,7 @@ public class GameRendererMixin {
 					),
 					to = @At(
 							value = "INVOKE",
-							target = "Lnet/minecraft/client/renderer/GameRenderer;renderConfusionOverlay(F)V"
+							target = "Lnet/minecraft/client/renderer/GameRenderer;renderConfusionOverlay(Lnet/minecraft/client/gui/GuiGraphics;F)V"
 					)
 			),
 			at = @At(

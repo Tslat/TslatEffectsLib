@@ -254,7 +254,7 @@ public abstract class LivingEntityMixin {
 			cancellable = true
 	)
 	private void onEffectsTick(CallbackInfo callback) {
-		if (((LivingEntity)(Object)this).level.isClientSide() && !doCustomEffectParticles((LivingEntity)(Object)this))
+		if (((LivingEntity)(Object)this).level().isClientSide() && !doCustomEffectParticles((LivingEntity)(Object)this))
 			callback.cancel();
 	}
 

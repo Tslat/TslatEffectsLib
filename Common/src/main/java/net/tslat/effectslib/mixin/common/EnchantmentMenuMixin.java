@@ -14,7 +14,7 @@ import java.util.List;
 
 @Mixin(EnchantmentMenu.class)
 public class EnchantmentMenuMixin {
-	@Inject(method = "getEnchantmentList", at = @At("TAIL"), cancellable = true, locals = LocalCapture.CAPTURE_FAILSOFT)
+	@Inject(method = "getEnchantmentList", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILSOFT)
 	private void filterExtendedEnchantments(ItemStack stack, int enchantSlot, int level, CallbackInfoReturnable<List<EnchantmentInstance>> callback, List<EnchantmentInstance> enchants) {
 		enchants.removeIf(instance -> instance.enchantment instanceof ExtendedEnchantment extendedEnchant && !extendedEnchant.canEnchant(stack, ExtendedEnchantment.ENCHANTING_TABLE));
 	}

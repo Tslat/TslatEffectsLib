@@ -22,7 +22,7 @@ public abstract class MobEffectInstanceMixin implements ExtendedMobEffectHolder 
 	Object data;
 
 	@Shadow
-	int duration;
+	private int duration;
 	@Shadow
 	public abstract MobEffect getEffect();
 	@Shadow

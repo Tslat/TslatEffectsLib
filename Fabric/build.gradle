@@ -71,7 +71,7 @@ curseforge {
 
     project {
         id = curseforge_id
-        changelog = 'https://github.com/Tslat/TslatEffectsLib/commits/1.19.4'
+        changelog = 'https://github.com/Tslat/TslatEffectsLib/commits/1.20'
         releaseType = 'release'
         addGameVersion minecraft_version
 
