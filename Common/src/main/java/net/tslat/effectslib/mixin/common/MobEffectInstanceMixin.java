@@ -1,5 +1,6 @@
 package net.tslat.effectslib.mixin.common;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
@@ -11,6 +12,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
@@ -64,6 +66,24 @@ public abstract class MobEffectInstanceMixin implements ExtendedMobEffectHolder 
 	private void checkEffectTick(LivingEntity entity, Runnable runnable, CallbackInfoReturnable<Boolean> callback) {
 		if (this.duration > 0 && this.getEffect() instanceof ExtendedMobEffect extendedEffect && extendedEffect.shouldTickEffect((MobEffectInstance)(Object)this, entity, this.duration, this.amplifier))
 			applyEffect(entity);
+	}
+
+	@Inject(
+			method = "writeDetailsTo",
+			at = @At(value = "TAIL")
+	)
+	private void write(CompoundTag pNbt, CallbackInfo ci) {
+		if (this.getEffect() instanceof ExtendedMobEffect extendedEffect)
+			extendedEffect.write(pNbt,(MobEffectInstance)(Object)this);
+	}
+
+	@Inject(
+			method = "loadSpecifiedEffect",
+			at = @At(value = "TAIL")
+	)
+	private static void load(MobEffect pEffect, CompoundTag pNbt, CallbackInfoReturnable<MobEffectInstance> cir) {
+		if (pEffect instanceof ExtendedMobEffect extendedEffect)
+			extendedEffect.read(pNbt,cir.getReturnValue());
 	}
 
 	@Override
