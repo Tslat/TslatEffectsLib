@@ -1,5 +1,6 @@
 package net.tslat.effectslib.api;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.damagesource.DamageSource;
@@ -228,6 +229,20 @@ public class ExtendedMobEffect extends MobEffect {
 	public boolean doClientSideEffectTick(MobEffectInstance effectInstance, LivingEntity entity) {
 		return false;
 	}
+
+	/**
+	 * Called when MobEffectInstance is loaded from NBT
+	 * @param nbt The compoundTag that the effect instance is loaded from
+	 * @param effectInstance The effect instance getting loaded
+	 */
+	public void read(CompoundTag nbt, MobEffectInstance effectInstance){};
+
+	/**
+	 * Called when MobEffectInstance is saved to NBT
+	 * @param nbt The compoundTag that the effect instance is saved to
+	 * @param effectInstance The effect instance getting saved
+	 */
+	public void write(CompoundTag nbt, MobEffectInstance effectInstance){};
 
 	// START DISABLED METHOD HANDLES
 
