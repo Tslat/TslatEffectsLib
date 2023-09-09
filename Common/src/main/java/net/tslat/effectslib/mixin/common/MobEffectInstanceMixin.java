@@ -79,7 +79,7 @@ public abstract class MobEffectInstanceMixin implements ExtendedMobEffectHolder 
 
 	@Inject(
 			method = "loadSpecifiedEffect",
-			at = @At(value = "TAIL")
+			at = @At(value = "HEAD")
 	)
 	private static void load(MobEffect pEffect, CompoundTag pNbt, CallbackInfoReturnable<MobEffectInstance> cir) {
 		if (pEffect instanceof ExtendedMobEffect extendedEffect)
