@@ -97,12 +97,33 @@ public class ExtendedMobEffect extends MobEffect {
 	}
 
 	/**
-	 * Handle for when the effect has been removed from an entity. Can be called either when expiring or when being manually removed by some other mechanic.<br>
-	 * This is called immediately after the {@link AttributeModifier AttributeModifiers} have been removed
-	 * @param effectInstance Effect instance for the effect.
-	 * @param entity The entity the effect has been removed from
+	 * @see ExtendedMobEffect#onRemove(MobEffectInstance, LivingEntity)
+	 * @param effectInstance
+	 * @param entity
 	 */
+	@Deprecated(forRemoval = true)
 	public void onRemoval(MobEffectInstance effectInstance, LivingEntity entity) {}
+
+	/**
+	 * Handle for when the effect is being removed from the entity.<br>
+	 * This callback is <u>not</u> called when the effect is being removed by expiration. See {@link ExtendedMobEffect#onExpiry}
+	 * @param effectInstance Effect instance for the effect.
+	 * @param entity The entity the effect is being removed from
+	 * @return true to proceed with removing, or false to prevent the effect being removed
+	 */
+	public boolean onRemove(MobEffectInstance effectInstance, LivingEntity entity) {
+		onRemoval(effectInstance, entity);
+
+		return true;
+	}
+
+	/**
+	 * Handle for when the effect has expired (run its timer out)<br>
+	 * The effect has already been removed from the entity at this stage
+	 * @param effectInstance Effect instance for the effect
+	 * @param entity The entity the effect was removed from
+	 */
+	public void onExpiry(MobEffectInstance effectInstance, LivingEntity entity) {}
 
 	/**
 	 * Check whether this effect should tick on the current tick.
@@ -231,18 +252,20 @@ public class ExtendedMobEffect extends MobEffect {
 	}
 
 	/**
-	 * Called when MobEffectInstance is loaded from NBT
+	 * Called when a MobEffectInstance with this effect is being loaded from NBT.<br>
+	 * This is called prior to any values being read from the nbt tag
 	 * @param nbt The compoundTag that the effect instance is loaded from
-	 * @param effectInstance The effect instance getting loaded
+	 * @param effectInstance The effect instance being loaded
 	 */
-	public void read(CompoundTag nbt, MobEffectInstance effectInstance){};
+	public void read(CompoundTag nbt, MobEffectInstance effectInstance) {}
 
 	/**
-	 * Called when MobEffectInstance is saved to NBT
+	 * Called when a MobEffectInstance with this effect is saved to NBT<br>
+	 * This is called after the nbt tag has been written to
 	 * @param nbt The compoundTag that the effect instance is saved to
-	 * @param effectInstance The effect instance getting saved
+	 * @param effectInstance The effect instance being saved
 	 */
-	public void write(CompoundTag nbt, MobEffectInstance effectInstance){};
+	public void write(CompoundTag nbt, MobEffectInstance effectInstance) {}
 
 	// START DISABLED METHOD HANDLES
 
