@@ -5,7 +5,7 @@ issueTrackerURL="https://github.com/Tslat/TslatEffectsLib/issues"
 
 [[mods]]
 modId="tslateffectslib"
-version="1.5"
+version="1.6"
 displayName="Tslat Effects Lib (TEL)"
 logoFile="logo.png"
 authors="Tslat"

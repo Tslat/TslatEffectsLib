@@ -12,8 +12,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class LivingEntityForgeMixin {
 	@Redirect(method = "curePotionEffects", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffectInstance;isCurativeItem(Lnet/minecraft/world/item/ItemStack;)Z"), remap = false)
 	private boolean cancelForgeHook(MobEffectInstance instance, ItemStack itemStack) {
-		if (instance.getEffect() instanceof ExtendedMobEffect extendedEffect)
-			return extendedEffect.shouldCureEffect(instance, itemStack, (LivingEntity)(Object)this);
+		if (instance.getEffect() instanceof ExtendedMobEffect extendedEffect) {
+			if (extendedEffect.shouldCureEffect(instance, itemStack, (LivingEntity)(Object)this))
+				return extendedEffect.onRemove(instance, (LivingEntity)(Object)this);
+
+			return false;
+		}
 
 		return instance.isCurativeItem(itemStack);
 	}
