@@ -12,7 +12,8 @@
     "common.AnvilMenuMixin",
     "common.EnchantCommandMixin",
     "common.EnchantRandomlyFunctionMixin",
-    "common.EnchantmentMenuMixin"
+    "common.EnchantmentMenuMixin",
+    "common.MobEffectInstanceAccessor"
   ],
   "client": [
     "client.EffectRenderingInventoryScreenMixin",
