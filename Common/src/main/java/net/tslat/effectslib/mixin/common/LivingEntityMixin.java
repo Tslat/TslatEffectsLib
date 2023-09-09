@@ -206,6 +206,8 @@ public abstract class LivingEntityMixin {
 			)
 	)
 	private Iterator<MobEffectInstance> wrapRemoveAllEffects(Collection<MobEffectInstance> collection) {
+		final LivingEntity entity = (LivingEntity)(Object)this;
+
 		return new Iterator<MobEffectInstance>() {
 			final Iterator<MobEffectInstance> iterator = collection.iterator();
 			MobEffectInstance next = null;
@@ -220,7 +222,7 @@ public abstract class LivingEntityMixin {
 
 				this.next = this.iterator.next();
 
-				if (this.next.getEffect() instanceof ExtendedMobEffect extendedEffect && !extendedEffect.onRemove(this.next, (LivingEntity)(Object)this)) {
+				if (this.next.getEffect() instanceof ExtendedMobEffect extendedEffect && !extendedEffect.onRemove(this.next, entity)) {
 					this.next = null;
 
 					return hasNext();
