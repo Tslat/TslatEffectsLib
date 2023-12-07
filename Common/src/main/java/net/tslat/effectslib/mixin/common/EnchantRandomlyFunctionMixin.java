@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(EnchantRandomlyFunction.class)
 public class EnchantRandomlyFunctionMixin {
-	@Redirect(method = "lambda$run$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/Enchantment;canEnchant(Lnet/minecraft/world/item/ItemStack;)Z"), remap = false)
+	@Redirect(method = {"lambda$run$5", "method_53327"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/enchantment/Enchantment;canEnchant(Lnet/minecraft/world/item/ItemStack;)Z"), remap = false)
 	private static boolean canEnchantExtended(Enchantment instance, ItemStack stack) {
 		if (instance instanceof ExtendedEnchantment extendedEnchantment)
 			return extendedEnchantment.canEnchant(stack, ExtendedEnchantment.LOOT);

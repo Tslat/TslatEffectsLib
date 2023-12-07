@@ -29,11 +29,11 @@ public abstract class MobEffectInstanceMixin implements ExtendedMobEffectHolder 
 	public abstract MobEffect getEffect();
 	@Shadow
 	private int amplifier;
-	@Shadow
-	public abstract void applyEffect(LivingEntity pEntity);
+
+	@Shadow protected abstract boolean hasRemainingDuration();
 
 	@Redirect(
-			method = "applyEffect",
+			method = "tick",
 			at = @At(
 					value = "INVOKE",
 					target = "Lnet/minecraft/world/effect/MobEffect;applyEffectTick(Lnet/minecraft/world/entity/LivingEntity;I)V"
@@ -52,11 +52,11 @@ public abstract class MobEffectInstanceMixin implements ExtendedMobEffectHolder 
 			method = "tick",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/world/effect/MobEffect;isDurationEffectTick(II)Z"
+					target = "Lnet/minecraft/world/effect/MobEffect;shouldApplyEffectTickThisTick(II)Z"
 			)
 	)
 	private boolean checkVanillaEffectTick(MobEffect effect, int duration, int amplifier) {
-		return !(effect instanceof ExtendedMobEffect) && effect.isDurationEffectTick(duration, amplifier);
+		return !(effect instanceof ExtendedMobEffect) && effect.shouldApplyEffectTickThisTick(duration, amplifier);
 	}
 
 	@Inject(
@@ -64,26 +64,26 @@ public abstract class MobEffectInstanceMixin implements ExtendedMobEffectHolder 
 			at = @At(value = "HEAD")
 	)
 	private void checkEffectTick(LivingEntity entity, Runnable runnable, CallbackInfoReturnable<Boolean> callback) {
-		if (this.duration > 0 && this.getEffect() instanceof ExtendedMobEffect extendedEffect && extendedEffect.shouldTickEffect((MobEffectInstance)(Object)this, entity, this.duration, this.amplifier))
-			applyEffect(entity);
+		if (hasRemainingDuration() && this.getEffect() instanceof ExtendedMobEffect extendedEffect && extendedEffect.shouldTickEffect((MobEffectInstance)(Object)this, entity, this.duration, this.amplifier))
+			extendedEffect.tick(entity, (MobEffectInstance)(Object)this, this.amplifier);
 	}
 
 	@Inject(
 			method = "writeDetailsTo",
 			at = @At(value = "TAIL")
 	)
-	private void write(CompoundTag pNbt, CallbackInfo ci) {
+	private void write(CompoundTag pNbt, CallbackInfo callback) {
 		if (this.getEffect() instanceof ExtendedMobEffect extendedEffect)
-			extendedEffect.write(pNbt,(MobEffectInstance)(Object)this);
+			extendedEffect.write(pNbt, (MobEffectInstance)(Object)this);
 	}
 
 	@Inject(
 			method = "loadSpecifiedEffect",
 			at = @At(value = "HEAD")
 	)
-	private static void load(MobEffect pEffect, CompoundTag pNbt, CallbackInfoReturnable<MobEffectInstance> cir) {
+	private static void load(MobEffect pEffect, CompoundTag pNbt, CallbackInfoReturnable<MobEffectInstance> callback) {
 		if (pEffect instanceof ExtendedMobEffect extendedEffect)
-			extendedEffect.read(pNbt,cir.getReturnValue());
+			extendedEffect.read(pNbt, callback.getReturnValue());
 	}
 
 	@Override
