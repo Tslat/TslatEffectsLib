@@ -33,7 +33,7 @@ public abstract class MobEffectInstanceMixin implements ExtendedMobEffectHolder 
 	@Shadow protected abstract boolean hasRemainingDuration();
 
 	@Redirect(
-			method = "tick",
+			method = "applyEffect",
 			at = @At(
 					value = "INVOKE",
 					target = "Lnet/minecraft/world/effect/MobEffect;applyEffectTick(Lnet/minecraft/world/entity/LivingEntity;I)V"
@@ -52,11 +52,11 @@ public abstract class MobEffectInstanceMixin implements ExtendedMobEffectHolder 
 			method = "tick",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/world/effect/MobEffect;shouldApplyEffectTickThisTick(II)Z"
+					target = "Lnet/minecraft/world/effect/MobEffect;isDurationEffectTick(II)Z"
 			)
 	)
 	private boolean checkVanillaEffectTick(MobEffect effect, int duration, int amplifier) {
-		return !(effect instanceof ExtendedMobEffect) && effect.shouldApplyEffectTickThisTick(duration, amplifier);
+		return !(effect instanceof ExtendedMobEffect) && effect.isDurationEffectTick(duration, amplifier);
 	}
 
 	@Inject(

@@ -20,6 +20,9 @@
     "entrypoints": {
       "main": [
         "net.tslat.effectslib.TslatEffectsLib"
+      ],
+      "client": [
+        "net.tslat.effectslib.TELFabricClient"
       ]
     },
     "mixins": [

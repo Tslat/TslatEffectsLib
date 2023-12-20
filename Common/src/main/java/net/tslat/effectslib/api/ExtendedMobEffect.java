@@ -4,7 +4,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.AttributeModifierTemplate;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -128,7 +127,7 @@ public class ExtendedMobEffect extends MobEffect {
 
 	/**
 	 * Check whether this effect should tick on the current tick.
-	 * @see MobEffect#shouldApplyEffectTickThisTick(int, int)
+	 * @see MobEffect#isDurationEffectTick(int, int)
 	 * @param effectInstance Effect instance for the effect. Marked with nullable so that the vanilla methods can be routed through for completeness
 	 * @param entity The entity the effect is ticking on
 	 * @param ticksRemaining The ticks remaining on this effect before it expires
@@ -139,30 +138,16 @@ public class ExtendedMobEffect extends MobEffect {
 		return false;
 	}
 
-	/**
-	 *
-	 * Disabled, use {@link ExtendedMobEffect#addAttributeModifiers(LivingEntity, AttributeMap, int)}
-	 */
 	@Override
-	public final void addAttributeModifiers(AttributeMap attributes, int amplifier) {
-		addAttributeModifiers(null, attributes, amplifier);
-	}
-
-	public void addAttributeModifiers(@Nullable LivingEntity entity, AttributeMap attributeMap, int amplifier) {
-		for (Map.Entry<Attribute, AttributeModifierTemplate> entry : this.getAttributeModifiers().entrySet()) {
-			final Attribute attribute = entry.getKey();
-			final AttributeInstance attributeInstance = attributeMap.getInstance(attribute);
+	public final void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
+		for(Map.Entry<Attribute, AttributeModifier> entry : this.getAttributeModifiers().entrySet()) {
+			AttributeInstance attributeInstance = attributeMap.getInstance(entry.getKey());
 
 			if (attributeInstance != null) {
-				AttributeModifierTemplate template = entry.getValue();
-				AttributeModifier modifier = entry.getValue().create(amplifier);
-				double dynamicAmount = getAttributeModifierValue(entity, attribute, modifier.getAmount(), amplifier);
+				AttributeModifier baseModifier = entry.getValue();
 
-				if (dynamicAmount != modifier.getAmount())
-					modifier = new AttributeModifier(template.getAttributeModifierId(), modifier.getName(), dynamicAmount, modifier.getOperation());
-
-				attributeInstance.removeModifier(template.getAttributeModifierId());
-				attributeInstance.addPermanentModifier(modifier);
+				attributeInstance.removeModifier(baseModifier);
+				attributeInstance.addPermanentModifier(new AttributeModifier(baseModifier.getId(), getDescriptionId() + " " + amplifier, getAttributeModifierValue(entity, entry.getKey(), baseModifier.getAmount(), amplifier), baseModifier.getOperation()));
 			}
 		}
 	}
@@ -315,7 +300,7 @@ public class ExtendedMobEffect extends MobEffect {
 	 * Disabled, use {@link ExtendedMobEffect#shouldTickEffect(MobEffectInstance, LivingEntity, int, int)}
 	 */
 	@Override
-	public final boolean shouldApplyEffectTickThisTick(int ticksRemaining, int amplifier) {
+	public final boolean isDurationEffectTick(int ticksRemaining, int amplifier) {
 		return shouldTickEffect(null, null, ticksRemaining, amplifier);
 	}
 }
