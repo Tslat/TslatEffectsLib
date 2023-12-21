@@ -27,7 +27,6 @@ import java.util.function.Consumer;
 
 /**
  * Flexible & powerful custom particle builder that allows for definition of a particle & various modifications to it, that can then be deployed on the client or sent via a packet.
- * <p><b>NOTE: </b>TEL does not natively handle server-to-client handling of particles. You must implement your own packet that calls {@link #spawnParticles(Level)} on the client side</p>
  * <p>For networking, use {@link #toNetwork(FriendlyByteBuf)} and {@link #fromNetwork(FriendlyByteBuf)} for de/serialization</p>
  */
 public final class ParticleBuilder {
@@ -355,25 +354,44 @@ public final class ParticleBuilder {
         return this.transitions == null ? List.of() : this.transitions;
     }
 
+    /**
+     * Use this or one of its equivalent below methods to deploy this ParticleBuilder's contents to the client side from the server
+     */
+    public void sendToAllPlayersInWorld(ServerLevel level) {
+        TELNetworking.sendToAllPlayersInWorld(new TELParticlePacket(this), level);
+    }
+
+    /**
+     * Use this or one of its equivalent below methods to deploy this ParticleBuilder's contents to the client side from the server
+     */
+    public void sendToAllPlayersTrackingEntity(ServerLevel level, Entity entity) {
+        TELNetworking.sendToAllPlayersTrackingEntity(new TELParticlePacket(this), entity);
+    }
+
+    /**
+     * Use this or one of its equivalent below methods to deploy this ParticleBuilder's contents to the client side from the server
+     */
+    public void sendToAllPlayersTrackingBlock(ServerLevel level, BlockPos pos) {
+        TELNetworking.sendToAllPlayersTrackingBlock(new TELParticlePacket(this), level, pos);
+    }
+
+    /**
+     * Only use on the client side
+     */
     public void spawnParticles(Level level) {
-        if (this.particle != null) {
-            if (level instanceof ServerLevel serverLevel) {
-                TELNetworking.sendToAllPlayersInWorld(new TELParticlePacket(this), serverLevel);
+        if (this.particle != null && level.isClientSide) {
+            if (!getTransitions().isEmpty()) {
+                final Consumer<Object> consumer = this.particleConsumer;
+
+                this.particleConsumer = particle -> {
+                    TELClient.addParticleTransitionHandler(createTransitionHandler(particle, this.transitions, TELClient::addParticleTransitionHandler));
+
+                    if (consumer != null)
+                        consumer.accept(particle);
+                };
             }
-            else {
-                if (!getTransitions().isEmpty()) {
-                    final Consumer<Object> consumer = this.particleConsumer;
 
-                    this.particleConsumer = particle -> {
-                        TELClient.addParticleTransitionHandler(createTransitionHandler(particle, this.transitions, TELClient::addParticleTransitionHandler));
-
-                        if (consumer != null)
-                            consumer.accept(particle);
-                    };
-                }
-
-                TELClient.addParticle(this);
-            }
+            TELClient.addParticle(this);
         }
     }
 
