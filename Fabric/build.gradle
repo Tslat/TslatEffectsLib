@@ -7,6 +7,13 @@ plugins {
 
 archivesBaseName = "${mod_name}-fabric-${minecraft_version}"
 
+repositories {
+    maven {
+        name = "Ladysnake Mods" // Cardinal Components
+        url = 'https://maven.ladysnake.org/releases'
+    }
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     mappings loom.layered() {
@@ -15,6 +22,8 @@ dependencies {
     }
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-item:${project.cardinal_components_version}"
+    include "dev.onyxstudios.cardinal-components-api:cardinal-components-item:${project.cardinal_components_version}"
     implementation project(":Common")
 }
 

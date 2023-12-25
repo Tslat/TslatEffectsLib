@@ -13,6 +13,8 @@
     "common.AnvilMenuMixin",
     "common.EnchantCommandMixin",
     "common.EnchantRandomlyFunctionMixin",
+    "common.GrindstoneMenuMixin",
+    "common.ItemStackMixin",
     "common.EnchantmentMenuMixin",
     "common.MobEffectInstanceAccessor"
   ],

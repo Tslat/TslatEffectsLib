@@ -1,6 +1,6 @@
 package net.tslat.effectslib.mixin.common;
 
-import com.mojang.datafixers.util.Pair;
+import it.unimi.dsi.fastutil.ints.IntObjectPair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
@@ -8,11 +8,12 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.tslat.effectslib.api.ExtendedEnchantment;
 import net.tslat.effectslib.api.ExtendedMobEffect;
 import net.tslat.effectslib.api.util.EnchantmentUtil;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -33,75 +34,82 @@ public class PlayerMixin {
 			index = 1
 	)
 	private float modifyDamage(DamageSource damageSource, float damage) {
-		if (!damageSource.is(DamageTypeTags.BYPASSES_EFFECTS)) {
-			LivingEntity victim = (LivingEntity)(Object)this;
-			List<Consumer<Float>> attackerCallbacks = new ObjectArrayList<>();
-			List<Consumer<Float>> victimCallbacks = new ObjectArrayList<>();
+		if (!damageSource.is(DamageTypeTags.BYPASSES_EFFECTS))
+			damage = tslatEffectsLib$handlePlayerDamage(damageSource, damage);
 
-			if (damageSource.getEntity() instanceof LivingEntity attacker) {
-				for (MobEffectInstance instance : attacker.getActiveEffects()) {
-					if (instance.getEffect() instanceof ExtendedMobEffect extendedMobEffect) {
-						damage = extendedMobEffect.modifyOutgoingAttackDamage(attacker, victim, instance, damageSource, damage);
+		return damage;
+	}
 
-						attackerCallbacks.add(dmg -> extendedMobEffect.afterOutgoingAttack(attacker, victim, instance, damageSource, dmg));
-					}
-				}
+	@Unique
+	private float tslatEffectsLib$handlePlayerDamage(DamageSource damageSource, float damage) {
+		final LivingEntity victim = (LivingEntity)(Object)this;
+		final List<Consumer<Float>> attackerCallbacks = new ObjectArrayList<>();
+		final List<Consumer<Float>> victimCallbacks = new ObjectArrayList<>();
+		final boolean bypassesEnchants = damageSource.is(DamageTypeTags.BYPASSES_ENCHANTMENTS);
 
-				if (!damageSource.is(DamageTypeTags.BYPASSES_ENCHANTMENTS)) {
-					Pair<Integer, Map<ItemStack, List<EnchantmentInstance>>> attackerEnchants = EnchantmentUtil.collectAllEnchantments(attacker, true);
-					int index = 0;
-
-					for (Map.Entry<ItemStack, List<EnchantmentInstance>> entry : attackerEnchants.getSecond().entrySet()) {
-						int size = entry.getValue().size();
-
-						for (EnchantmentInstance instance : entry.getValue()) {
-							ExtendedEnchantment enchant = ((ExtendedEnchantment)instance.enchantment);
-							damage = enchant.modifyOutgoingAttackDamage(attacker, victim, damageSource, damage, entry.getKey(), instance.level, attackerEnchants.getFirst());
-							final int thisIndex = index;
-
-							attackerCallbacks.add(dmg -> enchant.afterOutgoingAttack(attacker, victim, damageSource, dmg, entry.getKey(), instance.level, attackerEnchants.getFirst(), thisIndex == size - 1));
-						}
-
-						index++;
-					}
-				}
-			}
-
-			for (MobEffectInstance instance : victim.getActiveEffects()) {
+		if (damageSource.getEntity() instanceof LivingEntity attacker) {
+			for (MobEffectInstance instance : attacker.getActiveEffects()) {
 				if (instance.getEffect() instanceof ExtendedMobEffect extendedMobEffect) {
-					damage = extendedMobEffect.modifyIncomingAttackDamage(victim, instance, damageSource, damage);
+					damage = extendedMobEffect.modifyOutgoingAttackDamage(attacker, victim, instance, damageSource, damage);
 
-					victimCallbacks.add(dmg -> extendedMobEffect.afterIncomingAttack(victim, instance, damageSource, dmg));
+					attackerCallbacks.add(dmg -> extendedMobEffect.afterOutgoingAttack(attacker, victim, instance, damageSource, dmg));
 				}
 			}
 
-			if (!damageSource.is(DamageTypeTags.BYPASSES_ENCHANTMENTS)) {
-				Pair<Integer, Map<ItemStack, List<EnchantmentInstance>>> victimEnchants = EnchantmentUtil.collectAllEnchantments(victim, true);
-				int index = 0;
+			if (!bypassesEnchants) {
+				Map<Enchantment, EnchantmentUtil.EntityEnchantmentData> attackerEnchants = EnchantmentUtil.collectAllEnchantments(attacker, true);
 
-				for (Map.Entry<ItemStack, List<EnchantmentInstance>> entry : victimEnchants.getSecond().entrySet()) {
-					int size = entry.getValue().size();
+				for (Map.Entry<Enchantment, EnchantmentUtil.EntityEnchantmentData> entry : attackerEnchants.entrySet()) {
+					final EnchantmentUtil.EntityEnchantmentData data = entry.getValue();
+					final ExtendedEnchantment enchant = (ExtendedEnchantment)data.getEnchantment();
+					final int totalLevel = data.getTotalEnchantmentLevel();
+					final int enchantedStacks = data.getEnchantedStacks().size();
 
-					for (EnchantmentInstance instance : entry.getValue()) {
-						ExtendedEnchantment enchant = ((ExtendedEnchantment)instance.enchantment);
-						damage = enchant.modifyIncomingAttackDamage(victim, damageSource, damage, entry.getKey(), instance.level, victimEnchants.getFirst());
-						final int thisIndex = index;
+					for (int i = 0; i < enchantedStacks; i++) {
+						final IntObjectPair<ItemStack> stack = data.getEnchantedStacks().get(i);
+						damage = enchant.modifyOutgoingAttackDamage(attacker, victim, damageSource, damage, stack.second(), stack.firstInt(), totalLevel);
+						final boolean isLastStack = i == enchantedStacks - 1;
 
-						victimCallbacks.add(dmg -> enchant.afterIncomingAttack(victim, damageSource, dmg, entry.getKey(), instance.level, victimEnchants.getFirst(), thisIndex == size - 1));
+						attackerCallbacks.add(dmg -> enchant.afterOutgoingAttack(attacker, victim, damageSource, dmg, stack.second(), stack.firstInt(), totalLevel, isLastStack));
 					}
-
-					index++;
 				}
 			}
+		}
 
-			if (damage > 0) {
-				for (Consumer<Float> consumer : attackerCallbacks) {
-					consumer.accept(damage);
-				}
+		for (MobEffectInstance instance : victim.getActiveEffects()) {
+			if (instance.getEffect() instanceof ExtendedMobEffect extendedMobEffect) {
+				damage = extendedMobEffect.modifyIncomingAttackDamage(victim, instance, damageSource, damage);
 
-				for (Consumer<Float> consumer : victimCallbacks) {
-					consumer.accept(damage);
+				victimCallbacks.add(dmg -> extendedMobEffect.afterIncomingAttack(victim, instance, damageSource, dmg));
+			}
+		}
+
+		if (!bypassesEnchants) {
+			Map<Enchantment, EnchantmentUtil.EntityEnchantmentData> victimEnchants = EnchantmentUtil.collectAllEnchantments(victim, true);
+
+			for (Map.Entry<Enchantment, EnchantmentUtil.EntityEnchantmentData> entry : victimEnchants.entrySet()) {
+				final EnchantmentUtil.EntityEnchantmentData data = entry.getValue();
+				final ExtendedEnchantment enchant = (ExtendedEnchantment)data.getEnchantment();
+				final int totalLevel = data.getTotalEnchantmentLevel();
+				final int enchantedStacks = data.getEnchantedStacks().size();
+
+				for (int i = 0; i < enchantedStacks; i++) {
+					final IntObjectPair<ItemStack> stack = data.getEnchantedStacks().get(i);
+					damage = enchant.modifyIncomingAttackDamage(victim, damageSource, damage, stack.second(), stack.firstInt(), totalLevel);
+					final boolean isLastStack = i == enchantedStacks - 1;
+
+					victimCallbacks.add(dmg -> enchant.afterIncomingAttack(victim, damageSource, dmg, stack.second(), stack.firstInt(), totalLevel, isLastStack));
 				}
+			}
+		}
+
+		if (damage > 0) {
+			for (Consumer<Float> consumer : attackerCallbacks) {
+				consumer.accept(damage);
+			}
+
+			for (Consumer<Float> consumer : victimCallbacks) {
+				consumer.accept(damage);
 			}
 		}
 
@@ -116,11 +124,12 @@ public class PlayerMixin {
 			cancellable = true
 	)
 	private void checkCancellation(DamageSource damageSource, float damage, CallbackInfoReturnable<Boolean> callback) {
-		if (checkEffectAttackCancellation((LivingEntity)(Object)this, damageSource, damage))
+		if (tslatEffectsLib$checkEffectAttackCancellation((LivingEntity)(Object)this, damageSource, damage))
 			callback.setReturnValue(false);
 	}
 
-	private boolean checkEffectAttackCancellation(LivingEntity victim, DamageSource damageSource, float damage) {
+	@Unique
+	private boolean tslatEffectsLib$checkEffectAttackCancellation(LivingEntity victim, DamageSource damageSource, float damage) {
 		for (MobEffectInstance instance : victim.getActiveEffects()) {
 			if (instance.getEffect() instanceof ExtendedMobEffect extendedMobEffect)
 				if (!extendedMobEffect.beforeIncomingAttack(victim, instance, damageSource, damage))
