@@ -20,6 +20,12 @@
     "entrypoints": {
       "main": [
         "net.tslat.effectslib.TslatEffectsLib"
+      ],
+      "client": [
+        "net.tslat.effectslib.TELFabricClient"
+      ],
+      "cardinal-components-item": [
+        "net.tslat.effectslib.TELComponentRegistrar"
       ]
     },
     "mixins": [
@@ -31,8 +37,9 @@
       "minecraft": "1.20.x",
       "java": ">=17"
     },
-    "suggests": {
-      "another-mod": "*"
+    "custom": {
+      "cardinal-components": [
+        "tslateffectslib:tel_stack"
+      ]
     }
-  }
-  
+}

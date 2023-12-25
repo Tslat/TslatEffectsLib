@@ -45,10 +45,21 @@ public class ExtendedEnchantment extends Enchantment {
 	 * @param stack The ItemStack the enchant is on
 	 * @param level The level of the enchantment being checked for
 	 * @param entity The entity the stack comes from (or null if no entity available for this context)
-	 * @param slot The slot the stack comes from (or null if no stack available for this context)
+	 * @param slot The slot the stack comes from (or null if no slot available for this context)
 	 */
 	public boolean isApplicable(ItemStack stack, int level, @Nullable LivingEntity entity, @Nullable EquipmentSlot slot) {
 		return true;
+	}
+
+	/**
+	 * Return whether the {@link net.minecraft.world.inventory.GrindstoneMenu#removeNonCurses(ItemStack, int, int) Grindstone} should remove this enchantment when repairing an item with this on it
+	 * <p>Returning true from here will remove the enchantment, even if it is a {@link Enchantment#isCurse() curse}</p>
+	 * @param stack The ItemStack being modified
+	 * @return Whether the enchantment should be removed by the Grindstone or not, or null to default to vanilla behaviour
+	 */
+	@Nullable
+	public Boolean shouldGrindstoneRemove(ItemStack stack) {
+		return null;
 	}
 
 	/**
@@ -149,6 +160,7 @@ public class ExtendedEnchantment extends Enchantment {
 
 	/**
 	 * Trigger an effect or otherwise listen for when an entity equips an item with this enchantment on it
+	 * <p><b><u>NOTE:</u></b> Due to vanilla's weird implementation of inventory management, this method will also be called when a stack's NBT, capabilities, or size changes.</p>
 	 * @param entity The entity equipping the item
 	 * @param slot The slot the item is being equipped in
 	 * @param from The ItemStack that was previously equipped
@@ -159,6 +171,7 @@ public class ExtendedEnchantment extends Enchantment {
 
 	/**
 	 * Trigger an effect or otherwise listen for when an entity unequips an item with this enchantment on it
+	 * <p><b><u>NOTE:</u></b> Due to vanilla's weird implementation of inventory management, this method will also be called when a stack's NBT, capabilities, or size changes.</p>
 	 * @param entity The entity equipping the item
 	 * @param slot The slot the item is being equipped in
 	 * @param from The ItemStack that was previously equipped
@@ -166,6 +179,13 @@ public class ExtendedEnchantment extends Enchantment {
 	 * @param level The enchantment level on the new ItemStack
 	 */
 	public void onUnequip(LivingEntity entity, EquipmentSlot slot, ItemStack from, ItemStack to, int level) {}
+
+	/**
+	 * Perform any tick-based functionalities that your Enchantment should have for the given entity and stack
+	 * @param entity The entity that is currently being ticked
+	 * @param stack The ItemStack the enchantment is on
+	 */
+	public void tick(LivingEntity entity, ItemStack stack) {}
 
 	/**
 	 * The enchantment level calculation type for this enchantment.<br>

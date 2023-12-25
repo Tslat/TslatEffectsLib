@@ -5,7 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "tslateffectslib.refmap.json",
   "mixins": [
-    "common.LivingEntityForgeMixin",
+    "common.LivingEntityNeoForgeMixin",
     "common.LivingEntityMixin",
     "common.MobEffectInstanceMixin",
     "common.PlayerMixin",
@@ -13,6 +13,8 @@
     "common.AnvilMenuMixin",
     "common.EnchantCommandMixin",
     "common.EnchantRandomlyFunctionMixin",
+    "common.GrindstoneMenuMixin",
+    "common.ItemStackMixin",
     "common.EnchantmentMenuMixin",
     "common.MobEffectInstanceAccessor"
   ],
