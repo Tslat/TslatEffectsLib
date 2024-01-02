@@ -8,12 +8,13 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.*;
+import net.minecraftforge.network.Channel;
+import net.minecraftforge.network.ChannelBuilder;
+import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.SimpleChannel;
 import net.tslat.effectslib.TELClient;
 import net.tslat.effectslib.TELConstants;
 import net.tslat.effectslib.networking.packet.MultiloaderPacket;
-
-import java.util.function.Function;
 
 public class TELNetworkingForge implements TELNetworking {
 	private static final int VERSION = 1;
@@ -24,8 +25,8 @@ public class TELNetworkingForge implements TELNetworking {
 	 * Packet must extend {@link MultiloaderPacket} for ease-of-use
 	 */
 	@Override
-	public <P extends MultiloaderPacket<P>> void registerPacketInternal(Class<P> messageType, Function<FriendlyByteBuf, P> decoder) {
-		CHANNEL.messageBuilder(messageType).encoder(MultiloaderPacket::encode).decoder(decoder).consumerMainThread((packet, context) -> {
+	public <P extends MultiloaderPacket> void registerPacketInternal(ResourceLocation id, Class<P> messageType, FriendlyByteBuf.Reader<P> decoder) {
+		CHANNEL.messageBuilder(messageType).encoder(MultiloaderPacket::write).decoder(decoder).consumerMainThread((packet, context) -> {
 			packet.receiveMessage(context.getSender() != null ? context.getSender() : TELClient.getClientPlayer(), context::enqueueWork);
 			context.setPacketHandled(true);
 		});

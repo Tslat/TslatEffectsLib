@@ -5,13 +5,14 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.tslat.effectslib.command.TELCommand;
+import net.tslat.effectslib.networking.TELNetworking;
 
 @Mod(TELConstants.MOD_ID)
 public class TslatEffectsLib {
     public TslatEffectsLib()  {
         MinecraftForge.EVENT_BUS.addListener(TslatEffectsLib::registerCommands);
         MinecraftForge.EVENT_BUS.addListener(TslatEffectsLib::serverStarted);
-        TELCommon.init();
+        TELNetworking.init();
     }
 
     private static void registerCommands(final RegisterCommandsEvent ev) {

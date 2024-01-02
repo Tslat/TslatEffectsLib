@@ -15,7 +15,6 @@ import net.tslat.effectslib.TELFabricClient;
 import net.tslat.effectslib.networking.packet.MultiloaderPacket;
 
 import java.util.Locale;
-import java.util.function.Function;
 
 public final class TELNetworkingFabric implements TELNetworking {
     /**
@@ -23,7 +22,7 @@ public final class TELNetworkingFabric implements TELNetworking {
      * Packet must extend {@link MultiloaderPacket} for ease-of-use
      */
     @Override
-    public <P extends MultiloaderPacket<P>> void registerPacketInternal(Class<P> messageType, Function<FriendlyByteBuf, P> decoder) {
+    public <P extends MultiloaderPacket> void registerPacketInternal(ResourceLocation id, Class<P> messageType, FriendlyByteBuf.Reader<P> decoder) {
         TELFabricClient.registerPacket(messageType, decoder);
         ServerPlayNetworking.registerGlobalReceiver(new ResourceLocation(TELConstants.MOD_ID, messageType.getName().toLowerCase(Locale.ROOT)), (server, player, packetListener, buffer, sender) -> decoder.apply(buffer).receiveMessage(player, server::execute));
     }
@@ -42,12 +41,11 @@ public final class TELNetworkingFabric implements TELNetworking {
     @Override
     public void sendToAllPlayersInternal(MultiloaderPacket packet) {
         FriendlyByteBuf buffer = PacketByteBufs.create();
-        ResourceLocation id = MultiloaderPacket.getId(packet);
 
-        packet.encode(buffer);
+        packet.write(buffer);
 
         for (ServerPlayer pl : TELConstants.SERVER.getPlayerList().getPlayers()) {
-            ServerPlayNetworking.send(pl, id, buffer);
+            ServerPlayNetworking.send(pl, packet.id(), buffer);
         }
     }
 
@@ -57,12 +55,11 @@ public final class TELNetworkingFabric implements TELNetworking {
     @Override
     public void sendToAllPlayersInWorldInternal(MultiloaderPacket packet, ServerLevel level) {
         FriendlyByteBuf buffer = PacketByteBufs.create();
-        ResourceLocation id = MultiloaderPacket.getId(packet);
 
-        packet.encode(buffer);
+        packet.write(buffer);
 
         for (ServerPlayer pl : PlayerLookup.world(level)) {
-            ServerPlayNetworking.send(pl, id, buffer);
+            ServerPlayNetworking.send(pl, packet.id(), buffer);
         }
     }
 
@@ -82,11 +79,9 @@ public final class TELNetworkingFabric implements TELNetworking {
     @Override
     public void sendToPlayerInternal(MultiloaderPacket packet, ServerPlayer player) {
         FriendlyByteBuf buffer = PacketByteBufs.create();
-        ResourceLocation id = MultiloaderPacket.getId(packet);
 
-        packet.encode(buffer);
-
-        ServerPlayNetworking.send(player, id, buffer);
+        packet.write(buffer);
+        ServerPlayNetworking.send(player, packet.id(), buffer);
     }
 
     /**

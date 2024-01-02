@@ -8,31 +8,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.NetworkRegistry;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.simple.SimpleChannel;
-import net.tslat.effectslib.TELClient;
-import net.tslat.effectslib.TELConstants;
+import net.tslat.effectslib.TslatEffectsLib;
 import net.tslat.effectslib.networking.packet.MultiloaderPacket;
 
-import java.util.function.Function;
-
 public class TELNetworkingNeoForge implements TELNetworking {
-	private static final String REVISION = "1";
-	public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation(TELConstants.MOD_ID, "tel_channel"), () -> REVISION, REVISION::equals, REVISION::equals);
-
-	private static int id = 0;
-
-	/**
-	 * Register a custom packet for networking
-	 * Packet must extend {@link MultiloaderPacket} for ease-of-use
-	 */
 	@Override
-	public <P extends MultiloaderPacket<P>> void registerPacketInternal(Class<P> messageType, Function<FriendlyByteBuf, P> decoder) {
-		CHANNEL.registerMessage(id++, messageType, MultiloaderPacket::encode, decoder::apply, (packet, context) -> {
-			packet.receiveMessage(context.getSender() != null ? context.getSender() : TELClient.getClientPlayer(), context::enqueueWork);
-			context.setPacketHandled(true);
-		});
+	public <P extends MultiloaderPacket> void registerPacketInternal(ResourceLocation id, Class<P> packetClass, FriendlyByteBuf.Reader<P> decoder) {
+		TslatEffectsLib.packetRegistrar.play(id, decoder, (packet, context) -> packet.receiveMessage(context.player().get(), context.workHandler()::execute));
 	}
 
 	/**
@@ -40,7 +23,7 @@ public class TELNetworkingNeoForge implements TELNetworking {
 	 */
 	@Override
 	public void sendToServerInternal(MultiloaderPacket packet) {
-		CHANNEL.sendToServer(packet);
+		PacketDistributor.SERVER.noArg().send(packet);
 	}
 
 	/**
@@ -48,7 +31,7 @@ public class TELNetworkingNeoForge implements TELNetworking {
 	 */
 	@Override
 	public void sendToAllPlayersInternal(MultiloaderPacket packet) {
-		CHANNEL.send(PacketDistributor.ALL.noArg(), packet);
+		PacketDistributor.ALL.noArg().send(packet);
 	}
 
 	/**
@@ -56,7 +39,7 @@ public class TELNetworkingNeoForge implements TELNetworking {
 	 */
 	@Override
 	public void sendToAllPlayersInWorldInternal(MultiloaderPacket packet, ServerLevel level) {
-		CHANNEL.send(PacketDistributor.DIMENSION.with(level::dimension), packet);
+		PacketDistributor.DIMENSION.with(level.dimension()).send(packet);
 	}
 
 	/**
@@ -75,7 +58,7 @@ public class TELNetworkingNeoForge implements TELNetworking {
 	 */
 	@Override
 	public void sendToPlayerInternal(MultiloaderPacket packet, ServerPlayer player) {
-		CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), packet);
+		PacketDistributor.PLAYER.with(player).send(packet);
 	}
 
 	/**
@@ -87,10 +70,10 @@ public class TELNetworkingNeoForge implements TELNetworking {
 	@Override
 	public void sendToAllPlayersTrackingEntityInternal(MultiloaderPacket packet, Entity trackingEntity) {
 		if (trackingEntity instanceof Player) {
-			CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> trackingEntity), packet);
+			PacketDistributor.TRACKING_ENTITY_AND_SELF.with(trackingEntity).send(packet);
 		}
 		else {
-			CHANNEL.send(PacketDistributor.TRACKING_ENTITY.with(() -> trackingEntity), packet);
+			PacketDistributor.TRACKING_ENTITY.with(trackingEntity).send(packet);
 		}
 	}
 
@@ -99,6 +82,6 @@ public class TELNetworkingNeoForge implements TELNetworking {
 	 */
 	@Override
 	public void sendToAllPlayersTrackingBlockInternal(MultiloaderPacket packet, ServerLevel level, BlockPos pos) {
-		CHANNEL.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(pos)), packet);
+		PacketDistributor.TRACKING_CHUNK.with(level.getChunkAt(pos)).send(packet);
 	}
 }

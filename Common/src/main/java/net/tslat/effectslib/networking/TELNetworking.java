@@ -2,22 +2,22 @@ package net.tslat.effectslib.networking;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.tslat.effectslib.TELConstants;
 import net.tslat.effectslib.networking.packet.MultiloaderPacket;
-
-import java.util.function.Function;
+import net.tslat.effectslib.networking.packet.TELParticlePacket;
 
 public interface TELNetworking {
     /**
      * Register a custom packet for networking
      * <p>Packet must extend {@link MultiloaderPacket} for ease-of-use</p>
      */
-    static <P extends MultiloaderPacket<P>> void registerPacket(Class<P> messageType, Function<FriendlyByteBuf, P> decoder) {
-        TELConstants.NETWORKING.registerPacketInternal(messageType, decoder);
+    static <P extends MultiloaderPacket> void registerPacket(ResourceLocation id, Class<P> messageType, FriendlyByteBuf.Reader<P> decoder) {
+        TELConstants.NETWORKING.registerPacketInternal(id, messageType, decoder);
     }
 
     /**
@@ -72,9 +72,14 @@ public interface TELNetworking {
         TELConstants.NETWORKING.sendToAllPlayersTrackingBlockInternal(packet, level, pos);
     }
 
-    // <-- Multiloader instanced methods --> //
+    // <-- Internal instanced methods --> //
 
-    <P extends MultiloaderPacket<P>> void registerPacketInternal(Class<P> messageType, Function<FriendlyByteBuf, P> decoder);
+
+    static void init() {
+        registerPacket(TELParticlePacket.ID, TELParticlePacket.class, TELParticlePacket::new);
+    }
+
+    <P extends MultiloaderPacket> void registerPacketInternal(ResourceLocation id, Class<P> messageType, FriendlyByteBuf.Reader<P> decoder);
     void sendToServerInternal(MultiloaderPacket packet);
     void sendToAllPlayersInternal(MultiloaderPacket packet);
     void sendToAllPlayersInWorldInternal(MultiloaderPacket packet, ServerLevel level);

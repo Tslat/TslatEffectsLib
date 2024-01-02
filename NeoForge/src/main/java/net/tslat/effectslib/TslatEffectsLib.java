@@ -6,14 +6,19 @@ import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
+import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.tslat.effectslib.command.TELCommand;
+import net.tslat.effectslib.networking.TELNetworking;
 
 import java.util.function.Supplier;
 
 @Mod(TELConstants.MOD_ID)
 public class TslatEffectsLib {
+    public static IPayloadRegistrar packetRegistrar = null;
+
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, TELConstants.MOD_ID);
 
     protected static final Supplier<AttachmentType<TELItemStackData>> ITEMSTACK_DATA = ATTACHMENT_TYPES.register("tel_stack", () -> AttachmentType.builder(TELItemStackData::new).build());
@@ -22,11 +27,17 @@ public class TslatEffectsLib {
         NeoForge.EVENT_BUS.addListener(TslatEffectsLib::registerCommands);
         NeoForge.EVENT_BUS.addListener(TslatEffectsLib::serverStarted);
         ATTACHMENT_TYPES.register(modBus);
-        TELCommon.init();
+        modBus.addListener(TslatEffectsLib::networkingInit);
     }
 
     private static void registerCommands(final RegisterCommandsEvent ev) {
         TELCommand.registerSubcommands(ev.getDispatcher(), ev.getBuildContext());
+    }
+
+    private static void networkingInit(final RegisterPayloadHandlerEvent ev) {
+        packetRegistrar = ev.registrar(TELConstants.MOD_ID);
+        TELNetworking.init();
+        packetRegistrar = null;
     }
 
     private static void serverStarted(final ServerStartedEvent ev) {

@@ -1,21 +1,17 @@
 package net.tslat.effectslib.networking.packet;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.Locale;
 import java.util.function.Consumer;
 
-public interface MultiloaderPacket<P extends MultiloaderPacket<P>> {
-    static ResourceLocation getId(MultiloaderPacket<?> packet) {
-        return new ResourceLocation("tslatentitystatus", packet.getClass().getName().toLowerCase(Locale.ROOT));
-    }
-
+public interface MultiloaderPacket extends CustomPacketPayload {
     /**
      * Encode the packet's contents to the given buffer
      */
-    void encode(FriendlyByteBuf buffer);
+    @Override
+    void write(FriendlyByteBuf buffer);
 
     /**
      * Handle the message after being received and decoded.<br>

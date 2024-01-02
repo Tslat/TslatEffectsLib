@@ -2,6 +2,7 @@ package net.tslat.effectslib.networking.packet;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.tslat.effectslib.TELConstants;
@@ -11,7 +12,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class TELParticlePacket implements MultiloaderPacket<TELParticlePacket> {
+public class TELParticlePacket implements MultiloaderPacket {
+    public static final ResourceLocation ID = new ResourceLocation(TELConstants.MOD_ID, "tel_particle");
+
     private final Collection<ParticleBuilder> particles;
 
     public TELParticlePacket() {
@@ -34,6 +37,11 @@ public class TELParticlePacket implements MultiloaderPacket<TELParticlePacket> {
         this.particles = buffer.readCollection(ObjectArrayList::new, ParticleBuilder::fromNetwork);
     }
 
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
+
     public TELParticlePacket particle(final ParticleBuilder particle) {
         this.particles.add(particle);
 
@@ -41,7 +49,7 @@ public class TELParticlePacket implements MultiloaderPacket<TELParticlePacket> {
     }
 
     @Override
-    public void encode(FriendlyByteBuf buffer) {
+    public void write(FriendlyByteBuf buffer) {
         buffer.writeCollection(this.particles, (buf, builder) -> builder.toNetwork(buf));
     }
 

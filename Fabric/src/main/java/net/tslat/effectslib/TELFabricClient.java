@@ -20,12 +20,12 @@ public class TELFabricClient implements ClientModInitializer {
     public static void sendPacketToServer(MultiloaderPacket packet) {
         FriendlyByteBuf buffer = PacketByteBufs.create();
 
-        packet.encode(buffer);
+        packet.write(buffer);
 
-        ClientPlayNetworking.send(MultiloaderPacket.getId(packet), buffer);
+        ClientPlayNetworking.send(packet.id(), buffer);
     }
 
-    public static <P extends MultiloaderPacket<P>> void registerPacket(Class<P> messageType, Function<FriendlyByteBuf, P> decoder) {
+    public static <P extends MultiloaderPacket> void registerPacket(Class<P> messageType, Function<FriendlyByteBuf, P> decoder) {
         ClientPlayNetworking.registerGlobalReceiver(new ResourceLocation(TELConstants.MOD_ID, messageType.getName().toLowerCase(Locale.ROOT)), (client, handler, buf, responseSender) -> decoder.apply(buf).receiveMessage(client.player, client::execute));
     }
 }
