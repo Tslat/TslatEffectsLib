@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Flexible & powerful custom particle builder that allows for definition of a particle & various modifications to it, that can then be deployed on the client or sent via a packet.
@@ -63,62 +64,127 @@ public final class ParticleBuilder {
         this.seed = ThreadLocalRandom.current().nextLong();
     }
 
+    /**
+     * Create a particle builder for the given specified coordinates
+     */
     public static ParticleBuilder forPosition(ParticleOptions particle, double x, double y, double z) {
-        return new ParticleBuilder(particle, CustomParticlePosition.create(ObjectArrayList.of(new Vec3(x, y, z))));
+        return forPositions(particle, new Vec3(x, y, z));
     }
 
+    /**
+     * Create a particle builder for the given coordinates
+     */
     public static ParticleBuilder forPositions(ParticleOptions particle, Vec3... positions) {
         return new ParticleBuilder(particle, CustomParticlePosition.create(new ObjectArrayList<>(positions)));
     }
 
+    /**
+     * Create a particle builder for the given coordinates, generating each one from the supplier, with the amount of generated positions specified by the positionCount
+     */
+    public static ParticleBuilder forPositions(ParticleOptions particle, Supplier<Vec3> positionSupplier, int positionCount) {
+        final List<Vec3> positions = new ObjectArrayList<>(positionCount);
+
+        for (int i = 0; i < positionCount; i++) {
+            positions.add(positionSupplier.get());
+        }
+
+        return new ParticleBuilder(particle, CustomParticlePosition.create(positions));
+    }
+
+    /**
+     * Generate a particle builder for a line between the from and to positions, with a customisable density
+     */
     public static ParticleBuilder forPositionsInLine(ParticleOptions particle, Vec3 from, Vec3 to, int particlesPerBlock) {
         return new ParticleBuilder(particle, InLineParticlePosition.create(from, to, particlesPerBlock));
     }
 
+    /**
+     * Generate a particle builder for positions forming a lateral circle of a given radius based around a center point, with a customisable density
+     */
     public static ParticleBuilder forPositionsInCircle(ParticleOptions particle, Vec3 center, double radius, int particlesForCircle) {
         return new ParticleBuilder(particle, InCircleParticlePosition.create(center, radius, particlesForCircle));
     }
 
+    /**
+     * Generate a particle builder for positions forming a lateral circle of a given radius and angle based around a center point, with a customisable density
+     */
+    public static ParticleBuilder forPositionsInCircle(ParticleOptions particle, Vec3 center, Vec3 angle, double radius, int particlesForCircle) {
+        return new ParticleBuilder(particle, InCircleParticlePosition.create(center, angle, radius, particlesForCircle));
+    }
+
+    /**
+     * Generate a particle builder for positions forming a sphere of a given radius at the center point, with a customisable density
+     */
     public static ParticleBuilder forPositionsInSphere(ParticleOptions particle, Vec3 center, double radius, int particlesPerQuadrant) {
         return new ParticleBuilder(particle, InSphereParticlePosition.create(center, radius, particlesPerQuadrant));
     }
 
+    /**
+     * Generate a particle builder for random positions inside a block's hitbox
+     */
     public static ParticleBuilder forRandomPosInBlock(ParticleOptions particle, BlockPos pos) {
         return new ParticleBuilder(particle, RandomInBlockParticlePosition.create(pos));
     }
 
+    /**
+     * Generate a particle builder for random positions inside a given entity's bounding box(es)
+     */
     public static ParticleBuilder forRandomPosInEntity(ParticleOptions particle, Entity entity) {
         return new ParticleBuilder(particle, RandomInEntityParticlePosition.create(entity.getId(), entity.position()));
     }
 
+    /**
+     * Generate a particle builder for random positions inside a lateral circle of a given radius based around a center point
+     */
     public static ParticleBuilder forRandomPosInCircleRadius(ParticleOptions particle, Vec3 center, double radius) {
         return new ParticleBuilder(particle, RandomInRadiusParticlePosition.create(center, radius));
     }
 
+    /**
+     * Generate a particle builder for random positions inside a sphere of a given radius based around a center point
+     */
     public static ParticleBuilder forRandomPosInSphere(ParticleOptions particle, Vec3 center, double radius) {
         return new ParticleBuilder(particle, RandomInSphereParticlePosition.create(center, radius));
     }
 
+    /**
+     * Generate a particle builder for random positions inside a given bounding box
+     */
     public static ParticleBuilder forRandomPosInBounds(ParticleOptions particle, AABB bounds) {
         return new ParticleBuilder(particle, RandomInBoundsParticlePosition.create(bounds));
     }
 
+    /**
+     * Generate a particle builder for random positions at the edges of a given bounding box
+     */
     public static ParticleBuilder forRandomPosAtBoundsEdge(ParticleOptions particle, AABB bounds) {
         return new ParticleBuilder(particle, RandomAtBoundsEdgeParticlePosition.create(bounds));
     }
 
+    /**
+     * Generate a particle builder for random positions forming a circle of a specified radius at the center point
+     */
     public static ParticleBuilder forRandomPosAtCircleEdge(ParticleOptions particle, Vec3 center, double radius) {
         return forRandomPosAtCircleEdge(particle, center, new Vec3(0, 1, 0), radius);
     }
 
+    /**
+     * Generate a particle builder for random positions forming a circle of a specified radius and angle at the center point
+     */
     public static ParticleBuilder forRandomPosAtCircleEdge(ParticleOptions particle, Vec3 center, Vec3 angle, double radius) {
         return new ParticleBuilder(particle, RandomAtCircleEdgeParticlePosition.create(center, angle, radius));
     }
 
+    /**
+     * Generate a particle builder for random positions forming a sphere of a specified radius at the center point
+     */
     public static ParticleBuilder forRandomPosAtSphereEdge(ParticleOptions particle, Vec3 center, double radius) {
         return new ParticleBuilder(particle, RandomAtSphereEdgeParticlePosition.create(center, radius));
     }
 
+    /**
+     * Generate a particle builder using a given ParticlePositionWorker
+     */
     public static ParticleBuilder fromCommand(ParticleOptions particle, ParticlePositionWorker<?> position) {
         return new ParticleBuilder(particle, position);
     }
