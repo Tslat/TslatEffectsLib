@@ -355,24 +355,31 @@ public final class ParticleBuilder {
     }
 
     /**
-     * Use this or one of its equivalent below methods to deploy this ParticleBuilder's contents to the client side from the server
+     * Use this or one of its equivalent methods to deploy this ParticleBuilder's contents to the client side from the server
      */
     public void sendToAllPlayersInWorld(ServerLevel level) {
         TELNetworking.sendToAllPlayersInWorld(new TELParticlePacket(this), level);
     }
 
     /**
-     * Use this or one of its equivalent below methods to deploy this ParticleBuilder's contents to the client side from the server
+     * Use this or one of its equivalent methods to deploy this ParticleBuilder's contents to the client side from the server
      */
     public void sendToAllPlayersTrackingEntity(ServerLevel level, Entity entity) {
         TELNetworking.sendToAllPlayersTrackingEntity(new TELParticlePacket(this), entity);
     }
 
     /**
-     * Use this or one of its equivalent below methods to deploy this ParticleBuilder's contents to the client side from the server
+     * Use this or one of its equivalent methods to deploy this ParticleBuilder's contents to the client side from the server
      */
     public void sendToAllPlayersTrackingBlock(ServerLevel level, BlockPos pos) {
         TELNetworking.sendToAllPlayersTrackingBlock(new TELParticlePacket(this), level, pos);
+    }
+
+    /**
+     * Use this or one of its equivalent methods to deploy this ParticleBuilder's contents to the client side from the server
+     */
+    public void sendToAllNearbyPlayers(ServerLevel level, Vec3 origin, double radius) {
+        TELNetworking.sendToAllNearbyPlayers(new TELParticlePacket(this), level, origin, radius);
     }
 
     /**
