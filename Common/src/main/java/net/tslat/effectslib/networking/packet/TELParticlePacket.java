@@ -1,11 +1,14 @@
 package net.tslat.effectslib.networking.packet;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.tslat.effectslib.TELConstants;
+import net.minecraft.world.phys.Vec3;
 import net.tslat.effectslib.api.particle.ParticleBuilder;
+import net.tslat.effectslib.networking.TELNetworking;
 
 import java.util.Collection;
 import java.util.List;
@@ -50,7 +53,40 @@ public class TELParticlePacket implements MultiloaderPacket<TELParticlePacket> {
     }
 
     public void send(ServerLevel level) {
-        TELConstants.NETWORKING.sendToAllPlayersInWorldInternal(this, level);
+        if (isEmpty())
+            return;
+
+        TELNetworking.sendToAllPlayersInWorld(this, level);
+    }
+
+    /**
+     * Use this or one of its equivalent methods to deploy this ParticleBuilder's contents to the client side from the server
+     */
+    public void sendToAllPlayersTrackingEntity(ServerLevel level, Entity entity) {
+        if (isEmpty())
+            return;
+
+        TELNetworking.sendToAllPlayersTrackingEntity(this, entity);
+    }
+
+    /**
+     * Use this or one of its equivalent methods to deploy this ParticleBuilder's contents to the client side from the server
+     */
+    public void sendToAllPlayersTrackingBlock(ServerLevel level, BlockPos pos) {
+        if (isEmpty())
+            return;
+
+        TELNetworking.sendToAllPlayersTrackingBlock(this, level, pos);
+    }
+
+    /**
+     * Use this or one of its equivalent methods to deploy this ParticleBuilder's contents to the client side from the server
+     */
+    public void sendToAllNearbyPlayers(ServerLevel level, Vec3 origin, double radius) {
+        if (isEmpty())
+            return;
+
+        TELNetworking.sendToAllNearbyPlayers(this, level, origin, radius);
     }
 
     @Override

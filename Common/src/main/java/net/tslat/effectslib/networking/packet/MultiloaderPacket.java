@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 
 public interface MultiloaderPacket<P extends MultiloaderPacket<P>> {
     static ResourceLocation getId(MultiloaderPacket<?> packet) {
-        return new ResourceLocation("tslatentitystatus", packet.getClass().getName().toLowerCase(Locale.ROOT));
+        return new ResourceLocation("tslateffectslib", packet.getClass().getName().toLowerCase(Locale.ROOT));
     }
 
     /**
