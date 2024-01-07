@@ -62,6 +62,9 @@ public class TELParticlePacket implements MultiloaderPacket {
     }
 
     public void send(ServerLevel level) {
+        if (isEmpty())
+            return;
+
         TELNetworking.sendToAllPlayersInWorld(this, level);
     }
 
@@ -69,6 +72,9 @@ public class TELParticlePacket implements MultiloaderPacket {
      * Use this or one of its equivalent methods to deploy this ParticleBuilder's contents to the client side from the server
      */
     public void sendToAllPlayersTrackingEntity(ServerLevel level, Entity entity) {
+        if (isEmpty())
+            return;
+
         TELNetworking.sendToAllPlayersTrackingEntity(this, entity);
     }
 
@@ -76,6 +82,9 @@ public class TELParticlePacket implements MultiloaderPacket {
      * Use this or one of its equivalent methods to deploy this ParticleBuilder's contents to the client side from the server
      */
     public void sendToAllPlayersTrackingBlock(ServerLevel level, BlockPos pos) {
+        if (isEmpty())
+            return;
+
         TELNetworking.sendToAllPlayersTrackingBlock(this, level, pos);
     }
 
@@ -83,6 +92,9 @@ public class TELParticlePacket implements MultiloaderPacket {
      * Use this or one of its equivalent methods to deploy this ParticleBuilder's contents to the client side from the server
      */
     public void sendToAllNearbyPlayers(ServerLevel level, Vec3 origin, double radius) {
+        if (isEmpty())
+            return;
+
         TELNetworking.sendToAllNearbyPlayers(this, level, origin, radius);
     }
 
