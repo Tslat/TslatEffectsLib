@@ -13,6 +13,7 @@ import net.tslat.effectslib.api.util.EnchantmentUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Extension class of {@link net.minecraft.world.item.enchantment.Enchantment Enchantment}
@@ -253,5 +254,26 @@ public class ExtendedEnchantment extends Enchantment {
 		}
 
 		return slots;
+	}
+
+	/**
+	 * Helper method to check if an ItemStack is the one from the given slot.
+	 * <p>This could be useful for checking if a stack is from a given slot where you weren't already provided the slot, such as in {@link ExtendedEnchantment#tick(LivingEntity, ItemStack)}</p>
+	 */
+	public static boolean isStackFromSlot(LivingEntity entity, EquipmentSlot slot, ItemStack stack) {
+		return entity.getItemBySlot(slot) == stack;
+	}
+
+	/**
+	 * Helper method to try to determine which {@link EquipmentSlot} an ItemStack is in.
+	 * <p>This could be useful for checking what slot a stack is in where you weren't already provided the slot, such as in {@link ExtendedEnchantment#tick(LivingEntity, ItemStack)}</p>
+	 */
+	public static Optional<EquipmentSlot> getSlotForStack(LivingEntity entity, ItemStack stack) {
+		for (EquipmentSlot slot : EquipmentSlot.values()) {
+			if (entity.getItemBySlot(slot) == stack)
+				return Optional.of(slot);
+		}
+
+		return Optional.empty();
 	}
 }
