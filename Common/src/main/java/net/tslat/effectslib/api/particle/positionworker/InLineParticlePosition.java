@@ -10,6 +10,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -43,6 +44,11 @@ public class InLineParticlePosition implements ParticlePositionWorker<InLinePart
         return PositionType.IN_LINE;
     }
 
+    @Override
+    public int getParticleCountForSumOfPositions() {
+        return Mth.floor(this.fromPos.distanceTo(this.toPos) * this.particlesPerBlock);
+    }
+
     static InLineParticlePosition decode(FriendlyByteBuf buffer) {
         return new InLineParticlePosition(new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()), new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()), buffer.readVarInt());
     }
@@ -70,7 +76,7 @@ public class InLineParticlePosition implements ParticlePositionWorker<InLinePart
             this.positionIterator = new Iterator<>() {
                 private final Vec3 angle = InLineParticlePosition.this.fromPos.vectorTo(InLineParticlePosition.this.toPos).normalize();
                 private final double length = InLineParticlePosition.this.fromPos.distanceTo(InLineParticlePosition.this.toPos);
-                private final double increment = this.length / (1 / (float)InLineParticlePosition.this.particlesPerBlock);
+                private final double increment = 1 / (float)InLineParticlePosition.this.particlesPerBlock;
                 private double step = 0;
 
                 @Override

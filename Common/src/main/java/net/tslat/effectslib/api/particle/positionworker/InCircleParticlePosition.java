@@ -53,6 +53,11 @@ public class InCircleParticlePosition implements ParticlePositionWorker<InCircle
         return PositionType.IN_CIRCLE;
     }
 
+    @Override
+    public int getParticleCountForSumOfPositions() {
+        return this.totalParticles;
+    }
+
     static InCircleParticlePosition decode(FriendlyByteBuf buffer) {
         return new InCircleParticlePosition(new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()), new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()), buffer.readDouble(), buffer.readVarInt());
     }

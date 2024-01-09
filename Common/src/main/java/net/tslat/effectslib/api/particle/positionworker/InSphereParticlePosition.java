@@ -45,6 +45,11 @@ public class InSphereParticlePosition implements ParticlePositionWorker<InSphere
         return PositionType.IN_SPHERE;
     }
 
+    @Override
+    public int getParticleCountForSumOfPositions() {
+        return this.granularity * this.granularity * 2;
+    }
+
     static InSphereParticlePosition decode(FriendlyByteBuf buffer) {
         return new InSphereParticlePosition(new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()), buffer.readDouble(), buffer.readVarInt());
     }

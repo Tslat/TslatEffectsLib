@@ -41,6 +41,11 @@ public class CustomParticlePosition implements ParticlePositionWorker<CustomPart
         return PositionType.CUSTOM;
     }
 
+    @Override
+    public int getParticleCountForSumOfPositions() {
+        return this.positions.size();
+    }
+
     static CustomParticlePosition decode(FriendlyByteBuf buffer) {
         return new CustomParticlePosition(buffer.readCollection(ObjectArrayList::new, buf -> new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble())));
     }

@@ -31,6 +31,14 @@ public interface ParticlePositionWorker<T extends ParticlePositionWorker<T>> {
     Vec3 supplyPosition(Level level, RandomSource random);
     PositionType type();
 
+    /**
+     * A defaulted getter for returning the amount of particles this worker will require to complete one full cycle of its available positions.
+     * <p>Returns 1 for any PositionWorker with an indeterminate amount of positions</p>
+     */
+    default int getParticleCountForSumOfPositions() {
+        return 1;
+    }
+
     enum PositionType {
         CUSTOM(CustomParticlePosition::decode, new CustomParticlePosition.CommandSegment()),
         RANDOM_IN_BLOCK(RandomInBlockParticlePosition::decode, new RandomInBlockParticlePosition.CommandSegment()),
