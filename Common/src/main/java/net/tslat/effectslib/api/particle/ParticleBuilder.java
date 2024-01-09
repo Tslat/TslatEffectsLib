@@ -62,6 +62,8 @@ public final class ParticleBuilder {
         this.positionHandler = positionHandler;
         this.positionType = positionHandler.type();
         this.seed = ThreadLocalRandom.current().nextLong();
+
+        defaultParticleCount();
     }
 
     /**
@@ -211,7 +213,7 @@ public final class ParticleBuilder {
 
     /**
      * Set the amount of particles that should be generated based on the calculated number required for the defined {@link ParticlePositionWorker} to complete one full cycle of positions
-     * <p>This only works for PositionTypes that have a definable number of positions (in-line, in circle, etc)</p>>
+     * <p>This only works for PositionTypes that have a definable number of positions (in-line, in circle, etc)</p>
      */
     public ParticleBuilder defaultParticleCount() {
         this.particleCount = this.positionHandler.getParticleCountForSumOfPositions();
