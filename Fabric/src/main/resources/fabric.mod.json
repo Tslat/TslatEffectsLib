@@ -1,46 +1,46 @@
 {
-    "schemaVersion": 1,
-    "id": "tslateffectslib",
-    "version": "${version}",
-  
-    "name": "Tslat EffectsLib",
-    "description": "A library mod for better mob effects",
-    "authors": [
-      "Tslat"
+  "schemaVersion": 1,
+  "id": "tslateffectslib",
+  "version": "${version}",
+
+  "name": "Tslat EffectsLib",
+  "description": "A library mod for better mob effects",
+  "authors": [
+    "Tslat"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/tslateffectslib",
+    "sources": "https://github.com/Tslat/TslatEffectsLib"
+  },
+
+  "license": "MIT",
+  "icon": "logo.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.tslat.effectslib.TslatEffectsLib"
     ],
-    "contact": {
-      "homepage": "https://www.curseforge.com/minecraft/mc-mods/tslateffectslib",
-      "sources": "https://github.com/Tslat/TslatEffectsLib"
-    },
-  
-    "license": "MIT",
-    "icon": "logo.png",
-  
-    "environment": "*",
-    "entrypoints": {
-      "main": [
-        "net.tslat.effectslib.TslatEffectsLib"
-      ],
-      "client": [
-        "net.tslat.effectslib.TELFabricClient"
-      ],
-      "cardinal-components-item": [
-        "net.tslat.effectslib.TELComponentRegistrar"
-      ]
-    },
-    "mixins": [
-      "tslateffectslib.mixins.json"
+    "client": [
+      "net.tslat.effectslib.TELFabricClient"
     ],
-  
-    "depends": {
-      "fabricloader": ">=0.14",
-      "minecraft": "1.20.x",
-      "java": ">=17"
-    },
-    "custom": {
-      "cardinal-components": [
-        "tslateffectslib:tel_stack"
-      ]
-    }
+    "cardinal-components-item": [
+      "net.tslat.effectslib.TELComponentRegistrar"
+    ]
+  },
+  "mixins": [
+    "tslateffectslib.mixins.json"
+  ],
+  "accessWidener": "tslateffectslib.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.14",
+    "minecraft": "1.20.x",
+    "java": ">=17"
+  },
+  "custom": {
+    "cardinal-components": [
+      "tslateffectslib:tel_stack"
+    ]
   }
+}
   
