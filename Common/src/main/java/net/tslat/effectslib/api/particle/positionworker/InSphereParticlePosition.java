@@ -65,6 +65,11 @@ public class InSphereParticlePosition implements ParticlePositionWorker<InSphere
         return this.positionIterator.next();
     }
 
+    @Override
+    public int getParticleCountForSumOfPositions() {
+        return this.granularity * this.granularity * 2;
+    }
+
     private void checkCache(final Level level) {
         if (this.positionIterator == null || !this.positionIterator.hasNext()) {
             this.positionIterator = new Iterator<>() {
