@@ -71,7 +71,7 @@ public final class ParticleCommand implements Command<CommandSourceStack> {
 		LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal("particle").requires(sender -> sender.hasPermission(2)).executes(CMD);
 
 		RequiredArgumentBuilder<CommandSourceStack, ParticleOptions> typeArg = Commands.argument("type", ParticleArgument.particle(context));
-		CommandNode<CommandSourceStack> propertiesArg = Commands.argument("amount", IntegerArgumentType.integer(1, 16384))
+		CommandNode<CommandSourceStack> propertiesArg = Commands.argument("amount", IntegerArgumentType.integer(0, 16384))
 				.executes(ParticleCommand::spawnParticles)
 				.then(Commands.literal("properties")
 						.then(Commands.argument("props", StringArgumentType.string())
@@ -105,7 +105,11 @@ public final class ParticleCommand implements Command<CommandSourceStack> {
 		final ParticleOptions particle = ParticleArgument.getParticle(context, "type");
 		final Set<String> positionTypes = Arrays.stream(ParticlePositionWorker.PositionType.values()).map(Enum::name).collect(Collectors.toSet());
 		final ParticlePositionWorker.PositionType positionType = ParticlePositionWorker.PositionType.valueOf(getLiteralNode(context, positionTypes::contains).orElseThrow().getNode().getUsageText());
-		final ParticleBuilder particleBuilder = ParticleBuilder.fromCommand(particle, positionType.buildFromCommand(context)).spawnNTimes(IntegerArgumentType.getInteger(context, "amount"));
+		final ParticleBuilder particleBuilder = ParticleBuilder.fromCommand(particle, positionType.buildFromCommand(context));
+		final int count = IntegerArgumentType.getInteger(context, "amount");
+
+		if (count > 0)
+			particleBuilder.spawnNTimes(count);
 
 		handleTransitions(context, particleBuilder);
 		handleProperties(context, particleBuilder);
