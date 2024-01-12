@@ -4,6 +4,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.function.BiConsumer;
+import java.util.function.LongConsumer;
 
 /**
  * Particle transition handler that just hosts a callback for custom handling, saving custom tick handling for modifying the particle over the particle's lifespan or an optionally configurable length of time.
@@ -12,25 +13,31 @@ import java.util.function.BiConsumer;
  * <p>Consumer is provided the float percentage of the defined transition time that has passed and the particle itself</p>
  */
 public class CustomParticleTransition implements ParticleTransitionWorker<CustomParticleTransition> {
-    private final BiConsumer<Float, Particle> particleConsumer;
+    private final Handler handler;
     private final int transitionTime;
+    private long killTick = -1;
 
-    private CustomParticleTransition(BiConsumer<Float, Particle> consumer, int transitionTime) {
-        this.particleConsumer = consumer;
+    private CustomParticleTransition(Handler handler, int transitionTime) {
+        this.handler = handler;
         this.transitionTime = transitionTime;
     }
 
-    public static CustomParticleTransition create(BiConsumer<Float, Particle> consumer, int transitionTime) {
-        return new CustomParticleTransition(consumer, transitionTime);
+    public static CustomParticleTransition create(Handler handler, int transitionTime) {
+        return new CustomParticleTransition(handler, transitionTime);
     }
 
-    public static CustomParticleTransition create(BiConsumer<Float, Particle> consumer) {
-        return create(consumer, -1);
+    public static CustomParticleTransition create(Handler handler) {
+        return create(handler, -1);
     }
 
     @Override
     public TransitionType type() {
         return TransitionType.CUSTOM_TRANSITION;
+    }
+
+    @Override
+    public long getKillTick() {
+        return this.killTick;
     }
 
     static CustomParticleTransition decode(FriendlyByteBuf buffer) {
@@ -44,10 +51,18 @@ public class CustomParticleTransition implements ParticleTransitionWorker<Custom
 
     @Override
     public boolean tick(Object obj) {
+        if (!shouldBeAlive())
+            return false;
+
         final Particle particle = (Particle)obj;
 
-        this.particleConsumer.accept(Math.min(1f, particle.age / (float)(this.transitionTime == -1 ? particle.getLifetime() : this.transitionTime)), particle);
+        this.handler.tick(ParticleTransitionWorker.getTransitionProgress(particle.age, particle.getLifetime(), this.transitionTime), particle, this.killTick, killTick -> this.killTick = killTick);
 
         return particle.isAlive();
+    }
+
+    @FunctionalInterface
+    public interface Handler {
+        void tick(float transitionTime, Particle particle, long killTick, LongConsumer killTickConsumer);
     }
 }

@@ -24,6 +24,7 @@ import java.util.function.Function;
 public class FollowEntityParticleTransition implements ParticleTransitionWorker<FollowEntityParticleTransition> {
     private final int entityId;
     private final boolean stopOnCollision;
+    private long killTick = -1;
 
     private Function<Object, Vec3> startDistances;
     private Entity followingEntity;
@@ -46,6 +47,11 @@ public class FollowEntityParticleTransition implements ParticleTransitionWorker<
         return TransitionType.FOLLOW_ENTITY;
     }
 
+    @Override
+    public long getKillTick() {
+        return this.killTick;
+    }
+
     static FollowEntityParticleTransition decode(FriendlyByteBuf buffer) {
         return new FollowEntityParticleTransition(buffer.readVarInt(), buffer.readBoolean());
     }
@@ -58,7 +64,10 @@ public class FollowEntityParticleTransition implements ParticleTransitionWorker<
 
     @Override
     public boolean tick(Object particle) {
-        return TELClient.particleFollowEntityTick(particle, this.startDistances, this.followingEntity, this.entityId, this.stopOnCollision, function -> this.startDistances = function, entity -> this.followingEntity = entity);
+        if (!shouldBeAlive())
+            return false;
+
+        return TELClient.particleFollowEntityTick(particle, this.startDistances, this.followingEntity, this.entityId, this.stopOnCollision, function -> this.startDistances = function, entity -> this.followingEntity = entity, this.killTick, killTick -> this.killTick = killTick);
     }
 
     public static class CommandSegment implements CommandSegmentHandler<FollowEntityParticleTransition> {

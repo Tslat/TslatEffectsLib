@@ -18,42 +18,42 @@ import net.tslat.effectslib.api.util.CommandSegmentHandler;
 import java.util.function.Function;
 
 /**
- * Particle transition worker that moves the particle from its start position to the target position over the particle's lifespan or an optionally configurable length of time.
+ * Particle transition worker that moves the particle from its start position in the direction opposite to the target position over the particle's lifespan or an optionally configurable length of time.
  * <p>Optionally stop moving if the particle collides with something</p>
  */
-public class PositionParticleTransition implements ParticleTransitionWorker<PositionParticleTransition> {
-    private final Vec3 toPos;
+public class AwayFromPositionParticleTransition implements ParticleTransitionWorker<AwayFromPositionParticleTransition> {
+    private final Vec3 awayFromPos;
     private final int transitionTime;
     private final boolean stopOnCollision;
     private long killTick = -1;
 
-    private Function<Object, Vec3> startPositions;
+    private Function<Object, Vec3> angles;
 
-    private PositionParticleTransition(Vec3 toPos, int transitionTime, boolean stopOnCollision) {
-        this.toPos = toPos;
+    private AwayFromPositionParticleTransition(Vec3 awayFromPos, int transitionTime, boolean stopOnCollision) {
+        this.awayFromPos = awayFromPos;
         this.transitionTime = transitionTime;
         this.stopOnCollision = stopOnCollision;
     }
 
-    public static PositionParticleTransition create(Vec3 toPos, int transitionTime, boolean stopOnCollision) {
-        return new PositionParticleTransition(toPos, transitionTime, stopOnCollision);
+    public static AwayFromPositionParticleTransition create(Vec3 toPos, int transitionTime, boolean stopOnCollision) {
+        return new AwayFromPositionParticleTransition(toPos, transitionTime, stopOnCollision);
     }
 
-    public static PositionParticleTransition create(Vec3 toPos, int transitionTime) {
+    public static AwayFromPositionParticleTransition create(Vec3 toPos, int transitionTime) {
         return create(toPos, transitionTime, false);
     }
 
-    public static PositionParticleTransition create(Vec3 toPos, boolean stopOnCollision) {
+    public static AwayFromPositionParticleTransition create(Vec3 toPos, boolean stopOnCollision) {
         return create(toPos, -1, stopOnCollision);
     }
 
-    public static PositionParticleTransition create(Vec3 toPos) {
+    public static AwayFromPositionParticleTransition create(Vec3 toPos) {
         return create(toPos, -1);
     }
 
     @Override
     public TransitionType type() {
-        return TransitionType.POSITION_TRANSITION;
+        return TransitionType.AWAY_FROM_POSITION_TRANSITION;
     }
 
     @Override
@@ -61,15 +61,15 @@ public class PositionParticleTransition implements ParticleTransitionWorker<Posi
         return this.killTick;
     }
 
-    static PositionParticleTransition decode(FriendlyByteBuf buffer) {
-        return new PositionParticleTransition(new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()), buffer.readVarInt(), buffer.readBoolean());
+    static AwayFromPositionParticleTransition decode(FriendlyByteBuf buffer) {
+        return new AwayFromPositionParticleTransition(new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()), buffer.readVarInt(), buffer.readBoolean());
     }
 
     @Override
     public void toNetwork(FriendlyByteBuf buffer) {
-        buffer.writeDouble(this.toPos.x);
-        buffer.writeDouble(this.toPos.y);
-        buffer.writeDouble(this.toPos.z);
+        buffer.writeDouble(this.awayFromPos.x);
+        buffer.writeDouble(this.awayFromPos.y);
+        buffer.writeDouble(this.awayFromPos.z);
         buffer.writeVarInt(this.transitionTime);
         buffer.writeBoolean(this.stopOnCollision);
     }
@@ -79,13 +79,13 @@ public class PositionParticleTransition implements ParticleTransitionWorker<Posi
         if (!shouldBeAlive())
             return false;
 
-        return TELClient.particlePositionTransitionTick(particle, this.startPositions, this.toPos, this.transitionTime, this.stopOnCollision, function -> this.startPositions = function, this.killTick, killTick -> this.killTick = killTick);
+        return TELClient.particleAwayFromPositionTransitionTick(particle, this.angles, this.awayFromPos, this.transitionTime, this.stopOnCollision, function -> this.angles = function, this.killTick, killTick -> this.killTick = killTick);
     }
 
-    public static class CommandSegment implements CommandSegmentHandler<PositionParticleTransition> {
+    public static class CommandSegment implements CommandSegmentHandler<AwayFromPositionParticleTransition> {
         @Override
         public ArgumentBuilder<CommandSourceStack, ?> constructArguments(CommandBuildContext context, CommandNode<CommandSourceStack> forward) {
-            return Commands.argument("to_pos", Vec3Argument.vec3())
+            return Commands.argument("away_from_pos", Vec3Argument.vec3())
                     .then(forward)
                     .then(Commands.argument("transition_time", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
                             .then(forward))
@@ -96,7 +96,7 @@ public class PositionParticleTransition implements ParticleTransitionWorker<Posi
         }
 
         @Override
-        public PositionParticleTransition createFromArguments(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        public AwayFromPositionParticleTransition createFromArguments(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
             boolean stopOnColllision = false;
             int transitionTime = -1;
 
@@ -110,7 +110,7 @@ public class PositionParticleTransition implements ParticleTransitionWorker<Posi
             }
             catch (Exception ignored) {}
 
-            return new PositionParticleTransition(Vec3Argument.getVec3(context, "to_pos"), transitionTime, stopOnColllision);
+            return new AwayFromPositionParticleTransition(Vec3Argument.getVec3(context, "away_from_pos"), transitionTime, stopOnColllision);
         }
     }
 }

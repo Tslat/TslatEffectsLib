@@ -21,6 +21,7 @@ public class CirclingPositionParticleTransition implements ParticleTransitionWor
     private final Vec2 rotationAngle;
     private final boolean stopOnCollision;
     private final int transitionTime;
+    private long killTick = -1;
 
     private Function<Object, Pair<Vec3, Double>> startOffsets;
 
@@ -52,8 +53,16 @@ public class CirclingPositionParticleTransition implements ParticleTransitionWor
         return TransitionType.CIRCLING_POSITION;
     }
 
+    @Override
+    public long getKillTick() {
+        return this.killTick;
+    }
+
     static CirclingPositionParticleTransition decode(FriendlyByteBuf buffer) {
-        return new CirclingPositionParticleTransition(new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()), new Vec2(buffer.readFloat(), buffer.readFloat()), buffer.readBoolean(), buffer.readVarInt());
+        if (!shouldBeAlive())
+            return false;
+
+        return new CirclingPositionParticleTransition(new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()), new Vec2(buffer.readFloat(), buffer.readFloat()), buffer.readBoolean(), buffer.readVarInt(), this.killTick, killTick -> this.killTick = killTick);
     }
 
     @Override

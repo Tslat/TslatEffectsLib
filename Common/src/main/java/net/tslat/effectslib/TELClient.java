@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayDeque;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.LongConsumer;
 
 /**
  * Helper functions for TEL for client-only code
@@ -30,6 +31,14 @@ public final class TELClient {
 
     public static Player getClientPlayer() {
         return Minecraft.getInstance().player;
+    }
+
+    public static long getGameTick() {
+        return Minecraft.getInstance().level.getGameTime();
+    }
+
+    public static void clearParticles() {
+        Minecraft.getInstance().particleEngine.clearParticles();
     }
 
     public static void addParticleTransitionHandler(@NotNull Runnable handler) {
@@ -103,8 +112,11 @@ public final class TELClient {
         }
     }
 
-    public static boolean particleColourTransitionTick(Object obj, @Nullable Function<Object, Integer> fromColourGetter, int toColour, int transitionTime, Consumer<Function<Object, Integer>> startPosSetter) {
+    public static boolean particleColourTransitionTick(Object obj, @Nullable Function<Object, Integer> fromColourGetter, int toColour, int transitionTime, Consumer<Function<Object, Integer>> startPosSetter, long killTick, LongConsumer killTickSetter) {
         final Particle particle = (Particle)obj;
+
+        if (killTick == -1)
+            killTickSetter.accept(TELClient.getGameTick() + particle.getLifetime());
 
         if (fromColourGetter == null)
             startPosSetter.accept(fromColourGetter = new MemoizedFunction<>(obj2 -> FastColor.ARGB32.color((int)(particle.alpha * 255), (int)(particle.rCol * 255), (int)(particle.gCol * 255), (int)(particle.bCol * 255))));
@@ -121,8 +133,11 @@ public final class TELClient {
         return particle.isAlive();
     }
 
-    public static boolean particlePositionTransitionTick(Object obj, @Nullable Function<Object, Vec3> startPosGetter, Vec3 toPos, int transitionTime, boolean stopOnCollision, Consumer<Function<Object, Vec3>> startPosSetter) {
+    public static boolean particlePositionTransitionTick(Object obj, @Nullable Function<Object, Vec3> startPosGetter, Vec3 toPos, int transitionTime, boolean stopOnCollision, Consumer<Function<Object, Vec3>> startPosSetter, long killTick, LongConsumer killTickSetter) {
         final Particle particle = (Particle)obj;
+
+        if (killTick == -1)
+            killTickSetter.accept(TELClient.getGameTick() + particle.getLifetime());
 
         if (startPosGetter == null)
             startPosSetter.accept(startPosGetter = new MemoizedFunction<>(obj2 -> new Vec3(((Particle)obj2).x, ((Particle)obj2).y, ((Particle)obj2).z)));
@@ -138,8 +153,32 @@ public final class TELClient {
         return particle.isAlive();
     }
 
-    public static boolean particleVelocityTransitionTick(Object obj, @Nullable Function<Object, Vec3> startVelocityGetter, Vec3 toVelocity, int transitionTime, Consumer<Function<Object, Vec3>> startVelocitySetter) {
+    public static boolean particleAwayFromPositionTransitionTick(Object obj, @Nullable Function<Object, Vec3> startPosGetter, Vec3 awayFromPos, int transitionTime, boolean stopOnCollision, Consumer<Function<Object, Vec3>> startPosSetter, long killTick, LongConsumer killTickSetter) {
         final Particle particle = (Particle)obj;
+
+        if (killTick == -1)
+            killTickSetter.accept(TELClient.getGameTick() + particle.getLifetime());
+
+        if (startPosGetter == null)
+            startPosSetter.accept(startPosGetter = new MemoizedFunction<>(obj2 -> new Vec3(((Particle)obj2).x, ((Particle)obj2).y, ((Particle)obj2).z)));
+
+        if (stopOnCollision && particle.stoppedByCollision)
+            return particle.isAlive();
+
+        final float transitionProgress = particle.age / (float)(transitionTime == -1 ? particle.getLifetime() : transitionTime);
+        final Vec3 startPos = startPosGetter.apply(particle);
+        final Vec3 awayPos = startPos.add(awayFromPos.vectorTo(startPos).normalize().scale(transitionProgress));
+
+        particle.setPos(awayPos.x, awayPos.y, awayPos.z);
+
+        return particle.isAlive();
+    }
+
+    public static boolean particleVelocityTransitionTick(Object obj, @Nullable Function<Object, Vec3> startVelocityGetter, Vec3 toVelocity, int transitionTime, Consumer<Function<Object, Vec3>> startVelocitySetter, long killTick, LongConsumer killTickSetter) {
+        final Particle particle = (Particle)obj;
+
+        if (killTick == -1)
+            killTickSetter.accept(TELClient.getGameTick() + particle.getLifetime());
 
         if (startVelocityGetter == null)
             startVelocitySetter.accept(startVelocityGetter = new MemoizedFunction<>(obj2 -> new Vec3(((Particle)obj2).xd, ((Particle)obj2).yd, ((Particle)obj2).zd)));
@@ -152,8 +191,11 @@ public final class TELClient {
         return particle.isAlive();
     }
 
-    public static boolean particleScaleTransitionTick(Object obj, @Nullable Function<Object, Float> fromScaleGetter, float toScale, int transitionTime, Consumer<Function<Object, Float>> startScaleSetter) {
+    public static boolean particleScaleTransitionTick(Object obj, @Nullable Function<Object, Float> fromScaleGetter, float toScale, int transitionTime, Consumer<Function<Object, Float>> startScaleSetter, long killTick, LongConsumer killTickSetter) {
         final Particle particle = (Particle)obj;
+
+        if (killTick == -1)
+            killTickSetter.accept(TELClient.getGameTick() + particle.getLifetime());
 
         if (fromScaleGetter == null)
             startScaleSetter.accept(fromScaleGetter = new MemoizedFunction<>(obj2 -> ((Particle)obj2).bbWidth / 0.2f));
@@ -166,8 +208,11 @@ public final class TELClient {
         return particle.isAlive();
     }
 
-    public static boolean particleFollowEntityTick(Object obj, @Nullable Function<Object, Vec3> relativePositionGetter, @Nullable Entity entity, int entityId, boolean stopOnCollision, Consumer<Function<Object, Vec3>> relativePositionSetter, Consumer<Entity> entitySetter) {
+    public static boolean particleFollowEntityTick(Object obj, @Nullable Function<Object, Vec3> relativePositionGetter, @Nullable Entity entity, int entityId, boolean stopOnCollision, Consumer<Function<Object, Vec3>> relativePositionSetter, Consumer<Entity> entitySetter, long killTick, LongConsumer killTickSetter) {
         final Particle particle = (Particle)obj;
+
+        if (killTick == -1)
+            killTickSetter.accept(TELClient.getGameTick() + particle.getLifetime());
 
         if (entity == null)
             entitySetter.accept(entity = Minecraft.getInstance().level.getEntity(entityId));
@@ -190,8 +235,11 @@ public final class TELClient {
         return particle.isAlive();
     }
 
-    public static boolean particleCirclingPositionTransitionTick(Object obj, @Nullable Function<Object, Pair<Vec3, Double>> startOffsetsGetter, Vec3 origin, Vec2 angle, boolean stopOnCollision, int transitionTime, Consumer<Function<Object, Pair<Vec3, Double>>> startOffsetsSetter) {
+    public static boolean particleCirclingPositionTransitionTick(Object obj, @Nullable Function<Object, Pair<Vec3, Double>> startOffsetsGetter, Vec3 origin, Vec2 angle, boolean stopOnCollision, int transitionTime, Consumer<Function<Object, Pair<Vec3, Double>>> startOffsetsSetter, long killTick, LongConsumer killTickSetter) {
         final Particle particle = (Particle)obj;
+
+        if (killTick == -1)
+            killTickSetter.accept(TELClient.getGameTick() + particle.getLifetime());
 
         if (startOffsetsGetter == null) {
             startOffsetsSetter.accept(startOffsetsGetter = new MemoizedFunction<>(obj2 -> {

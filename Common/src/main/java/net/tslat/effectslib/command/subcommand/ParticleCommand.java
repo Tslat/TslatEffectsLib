@@ -16,16 +16,19 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.ParticleArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -34,12 +37,11 @@ import net.tslat.effectslib.api.particle.positionworker.ParticlePositionWorker;
 import net.tslat.effectslib.api.particle.transitionworker.ParticleTransitionWorker;
 import net.tslat.effectslib.command.TELCommand;
 import net.tslat.effectslib.networking.TELNetworking;
+import net.tslat.effectslib.networking.packet.TELClearParticlesPacket;
 import net.tslat.effectslib.networking.packet.TELParticlePacket;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -58,8 +60,8 @@ public final class ParticleCommand implements Command<CommandSourceStack> {
 			if (value)
 				builder.isAmbient();
 		}));
-		map.put("velocity", new ParticlePropertyParser<>("<x y z>", ParticlePropertyParser::parseVec3, ParticleBuilder::velocity));
-		map.put("colour", new ParticlePropertyParser<>("<red green blue alpha>", ParticlePropertyParser::parseColour, ParticleBuilder::colourOverride));
+		map.put("velocity", new ParticlePropertyParser<>("<x,y,z>", ParticlePropertyParser::parseVec3, ParticleBuilder::velocity));
+		map.put("colour", new ParticlePropertyParser<>("<red,green,blue,alpha>", ParticlePropertyParser::parseColour, ParticleBuilder::colourOverride));
 		map.put("lifespan", new ParticlePropertyParser<>("<tickLifespan>", ParticlePropertyParser::parseInt, ParticleBuilder::lifespan));
 		map.put("gravity", new ParticlePropertyParser<>("<gravityMod>", ParticlePropertyParser::parseFloat, ParticleBuilder::gravityOverride));
 		map.put("drag", new ParticlePropertyParser<>("<dragCoefficient>", ParticlePropertyParser::parseFloat, ParticleBuilder::velocityDrag));
@@ -94,11 +96,38 @@ public final class ParticleCommand implements Command<CommandSourceStack> {
 			typeArg.then(positionArg);
 		}
 
+		builder.then(Commands.literal("clearparticles")
+				.executes(context1 -> clearParticles(context1, null))
+				.then(Commands.argument("players", EntityArgument.players())
+						.executes(context1 -> clearParticles(context1, new ObjectArrayList<>(EntityArgument.getPlayers(context1, "players"))))));
+
 		builder.then(Commands.literal("printproperties")
 				.executes(ParticleCommand::printProperties));
 		builder.then(typeArg);
 
 		return builder;
+	}
+
+	private static int clearParticles(CommandContext<CommandSourceStack> context, @Nullable List<ServerPlayer> players) throws CommandSyntaxException {
+		if (players == null) {
+			if (!context.getSource().isPlayer())
+				return 0;
+
+			players = List.of(context.getSource().getPlayer());
+		}
+
+		TELClearParticlesPacket packet = new TELClearParticlesPacket();
+
+		players.forEach(pl -> TELNetworking.sendToPlayer(packet, pl));
+
+		if (players.size() == 1) {
+			TELCommand.feedback(context.getSource(), "Particle", "command.tel.particle.clear.success.single", TELCommand.CommandFeedbackType.SUCCESS, players.get(0).getDisplayName());
+		}
+		else {
+			TELCommand.feedback(context.getSource(), "Particle", "command.tel.particle.clear.success.multiple", TELCommand.CommandFeedbackType.SUCCESS, Component.literal(String.valueOf(players.size())));
+		}
+
+		return 1;
 	}
 
 	private static int spawnParticles(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -156,7 +185,7 @@ public final class ParticleCommand implements Command<CommandSourceStack> {
 					StringBuilder valueBuilder = new StringBuilder();
 
 					if (propertiesReader.canRead()) {
-						String read = propertiesReader.readUnquotedString();
+						String read = readPropertyFromString(propertiesReader);
 
 						if (propertiesReader.canRead() && propertiesReader.peek() == ' ')
 							propertiesReader.skip();
@@ -182,6 +211,24 @@ public final class ParticleCommand implements Command<CommandSourceStack> {
 				throw new CommandSyntaxException(new SimpleCommandExceptionType(exceptionMsg), exceptionMsg);
 			}
 		}
+	}
+
+	private static String readPropertyFromString(final StringReader reader) {
+		final int start = reader.getCursor();
+
+		while (reader.canRead() && isAllowedInPropertyValue(reader.peek())) {
+			reader.skip();
+		}
+		return reader.getString().substring(start, reader.getCursor());
+	}
+
+	private static boolean isAllowedInPropertyValue(final char c) {
+		return c >= '0' && c <= '9'
+				|| c >= 'A' && c <= 'Z'
+				|| c >= 'a' && c <= 'z'
+				|| c == '_' || c == '-'
+				|| c == '.' || c == '+'
+				|| c == ',' || c == ';';
 	}
 
 	private static int printProperties(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -248,7 +295,7 @@ public final class ParticleCommand implements Command<CommandSourceStack> {
 
 		protected static Either<Integer, CommandSyntaxException> parseColour(String valueString) {
 			return parseOrError(() -> {
-				String[] components = valueString.split(" ");
+				String[] components = valueString.split(",");
 
 				return FastColor.ARGB32.color(Mth.clamp(Integer.parseInt(components[3]), 0, 255), Mth.clamp(Integer.parseInt(components[0]), 0, 255), Mth.clamp(Integer.parseInt(components[1]), 0, 255), Mth.clamp(Integer.parseInt(components[2]), 0, 255));
 			}, ex -> Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(new StringReader(ex)));
@@ -256,10 +303,10 @@ public final class ParticleCommand implements Command<CommandSourceStack> {
 
 		protected static Either<Vec3, CommandSyntaxException> parseVec3(String valueString) {
 			return parseOrError(() -> {
-				String[] components = valueString.split(" ");
+				String[] components = valueString.split(",");
 
 				return new Vec3(Double.parseDouble(components[0]), Double.parseDouble(components[1]), Double.parseDouble(components[2]));
-			}, ex -> CommandSyntaxException.BUILT_IN_EXCEPTIONS.readerExpectedInt().createWithContext(new StringReader(ex)));
+			}, ex -> CommandSyntaxException.BUILT_IN_EXCEPTIONS.readerExpectedDouble().createWithContext(new StringReader(ex)));
 		}
 	}
 }

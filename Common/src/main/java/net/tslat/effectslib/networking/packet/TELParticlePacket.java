@@ -7,8 +7,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.tslat.effectslib.TELClient;
 import net.tslat.effectslib.api.particle.ParticleBuilder;
 import net.tslat.effectslib.networking.TELNetworking;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
@@ -90,10 +92,10 @@ public class TELParticlePacket implements MultiloaderPacket<TELParticlePacket> {
     }
 
     @Override
-    public void receiveMessage(Player sender, Consumer<Runnable> workQueue) {
+    public void receiveMessage(@Nullable Player sender, Consumer<Runnable> workQueue) {
         workQueue.accept(() -> {
             for (ParticleBuilder builder : this.particles) {
-                builder.spawnParticles(sender.level());
+                builder.spawnParticles(TELClient.getClientPlayer().level());
             }
         });
     }

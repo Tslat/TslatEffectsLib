@@ -21,6 +21,7 @@ import java.util.function.Function;
 public class ScaleParticleTransition implements ParticleTransitionWorker<ScaleParticleTransition> {
     private final float toScale;
     private final int transitionTime;
+    private long killTick = -1;
 
     private Function<Object, Float> startScales;
 
@@ -42,6 +43,11 @@ public class ScaleParticleTransition implements ParticleTransitionWorker<ScalePa
         return TransitionType.SCALE_TRANSITION;
     }
 
+    @Override
+    public long getKillTick() {
+        return this.killTick;
+    }
+
     static ScaleParticleTransition decode(FriendlyByteBuf buffer) {
         return new ScaleParticleTransition(buffer.readFloat(), buffer.readVarInt());
     }
@@ -54,7 +60,10 @@ public class ScaleParticleTransition implements ParticleTransitionWorker<ScalePa
 
     @Override
     public boolean tick(Object particle) {
-        return TELClient.particleScaleTransitionTick(particle, this.startScales, this.toScale, this.transitionTime, function -> this.startScales = function);
+        if (!shouldBeAlive())
+            return false;
+
+        return TELClient.particleScaleTransitionTick(particle, this.startScales, this.toScale, this.transitionTime, function -> this.startScales = function, this.killTick, killTick -> this.killTick = killTick);
     }
 
     public static class CommandSegment implements CommandSegmentHandler<ScaleParticleTransition> {
