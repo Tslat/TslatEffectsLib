@@ -18,6 +18,7 @@ public interface MultiloaderPacket extends CustomPacketPayload {
      * Handle the message after being received and decoded.<br>
      * Your packet should have its instance-values populated at this stage.<br>
      * This method is side-agnostic, so make sure you call out to client proxies as needed
+     * <p>The player may be null if the packet is being sent before the player loads in</p>
      */
     void receiveMessage(@Nullable Player sender, Consumer<Runnable> workQueue);
 }
