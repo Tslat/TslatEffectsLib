@@ -9,6 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.tslat.effectslib.TELConstants;
 import net.tslat.effectslib.networking.packet.MultiloaderPacket;
+import net.tslat.effectslib.networking.packet.TELClearParticlesPacket;
 import net.tslat.effectslib.networking.packet.TELParticlePacket;
 
 public interface TELNetworking {
@@ -77,6 +78,7 @@ public interface TELNetworking {
 
     static void init() {
         registerPacket(TELParticlePacket.ID, TELParticlePacket.class, TELParticlePacket::new);
+        registerPacket(TELClearParticlesPacket.ID, TELClearParticlesPacket.class, TELClearParticlesPacket::new);
     }
 
     <P extends MultiloaderPacket> void registerPacketInternal(ResourceLocation id, Class<P> messageType, FriendlyByteBuf.Reader<P> decoder);
