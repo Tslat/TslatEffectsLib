@@ -22,6 +22,7 @@ import java.util.function.Function;
 public class ColourParticleTransition implements ParticleTransitionWorker<ColourParticleTransition> {
     private final int toColour;
     private final int transitionTime;
+    private long killTick = -1;
 
     private Function<Object, Integer> startColours;
 
@@ -43,6 +44,11 @@ public class ColourParticleTransition implements ParticleTransitionWorker<Colour
         return TransitionType.COLOUR_TRANSITION;
     }
 
+    @Override
+    public long getKillTick() {
+        return this.killTick;
+    }
+
     static ColourParticleTransition decode(FriendlyByteBuf buffer) {
         return new ColourParticleTransition(buffer.readVarInt(), buffer.readVarInt());
     }
@@ -55,7 +61,10 @@ public class ColourParticleTransition implements ParticleTransitionWorker<Colour
 
     @Override
     public boolean tick(Object particle) {
-        return TELClient.particleColourTransitionTick(particle, this.startColours, this.toColour, this.transitionTime, function -> this.startColours = function);
+        if (!shouldBeAlive())
+            return false;
+
+        return TELClient.particleColourTransitionTick(particle, this.startColours, this.toColour, this.transitionTime, function -> this.startColours = function, this.killTick, killTick -> this.killTick = killTick);
     }
 
     public static class CommandSegment implements CommandSegmentHandler<ColourParticleTransition> {

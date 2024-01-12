@@ -25,6 +25,7 @@ public class PositionParticleTransition implements ParticleTransitionWorker<Posi
     private final Vec3 toPos;
     private final int transitionTime;
     private final boolean stopOnCollision;
+    private long killTick = -1;
 
     private Function<Object, Vec3> startPositions;
 
@@ -55,6 +56,11 @@ public class PositionParticleTransition implements ParticleTransitionWorker<Posi
         return TransitionType.POSITION_TRANSITION;
     }
 
+    @Override
+    public long getKillTick() {
+        return this.killTick;
+    }
+
     static PositionParticleTransition decode(FriendlyByteBuf buffer) {
         return new PositionParticleTransition(new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()), buffer.readVarInt(), buffer.readBoolean());
     }
@@ -70,7 +76,10 @@ public class PositionParticleTransition implements ParticleTransitionWorker<Posi
 
     @Override
     public boolean tick(Object particle) {
-        return TELClient.particlePositionTransitionTick(particle, this.startPositions, this.toPos, this.transitionTime, this.stopOnCollision, function -> this.startPositions = function);
+        if (!shouldBeAlive())
+            return false;
+
+        return TELClient.particlePositionTransitionTick(particle, this.startPositions, this.toPos, this.transitionTime, this.stopOnCollision, function -> this.startPositions = function, this.killTick, killTick -> this.killTick = killTick);
     }
 
     public static class CommandSegment implements CommandSegmentHandler<PositionParticleTransition> {

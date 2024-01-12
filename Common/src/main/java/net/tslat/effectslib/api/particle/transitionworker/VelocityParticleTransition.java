@@ -22,6 +22,7 @@ import java.util.function.Function;
 public class VelocityParticleTransition implements ParticleTransitionWorker<VelocityParticleTransition> {
     private final Vec3 toVelocity;
     private final int transitionTime;
+    private long killTick = -1;
 
     private Function<Object, Vec3> startVelocities;
 
@@ -43,6 +44,11 @@ public class VelocityParticleTransition implements ParticleTransitionWorker<Velo
         return TransitionType.VELOCITY_TRANSITION;
     }
 
+    @Override
+    public long getKillTick() {
+        return this.killTick;
+    }
+
     static VelocityParticleTransition decode(FriendlyByteBuf buffer) {
         return new VelocityParticleTransition(new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()), buffer.readVarInt());
     }
@@ -57,7 +63,10 @@ public class VelocityParticleTransition implements ParticleTransitionWorker<Velo
 
     @Override
     public boolean tick(Object particle) {
-        return TELClient.particleVelocityTransitionTick(particle, startVelocities, this.toVelocity, this.transitionTime, function -> this.startVelocities = function);
+        if (!shouldBeAlive())
+            return false;
+
+        return TELClient.particleVelocityTransitionTick(particle, startVelocities, this.toVelocity, this.transitionTime, function -> this.startVelocities = function, this.killTick, killTick -> this.killTick = killTick);
     }
 
     public static class CommandSegment implements CommandSegmentHandler<VelocityParticleTransition> {

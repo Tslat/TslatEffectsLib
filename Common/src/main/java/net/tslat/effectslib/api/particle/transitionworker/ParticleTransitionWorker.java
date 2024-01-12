@@ -7,6 +7,7 @@ import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.FriendlyByteBuf;
+import net.tslat.effectslib.TELClient;
 import net.tslat.effectslib.api.util.CommandSegmentHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,6 +28,15 @@ public interface ParticleTransitionWorker<T extends ParticleTransitionWorker<T>>
      */
     boolean tick(Object particle);
     TransitionType type();
+    long getKillTick();
+
+    /**
+     * Wrapping method check to determine whether the TransitionWorker should still be alive based on the age of the particle.
+     * <p>This exists because MC uses an {@link com.google.common.collect.EvictingQueue} for particles, which can cause TransitionHandlers to exist indefinitely if attached to an evicted particle, as it will never age</p>
+     */
+    default boolean shouldBeAlive() {
+        return getKillTick() == -1 || TELClient.getGameTick() <= getKillTick();
+    }
 
     /**
      * Get the float percentage that the transition worker is through its transition based on the defined transition time and particle's lifespan
@@ -39,6 +49,7 @@ public interface ParticleTransitionWorker<T extends ParticleTransitionWorker<T>>
         CUSTOM_TRANSITION(CustomParticleTransition::decode, null),
         COLOUR_TRANSITION(ColourParticleTransition::decode, new ColourParticleTransition.CommandSegment()),
         POSITION_TRANSITION(PositionParticleTransition::decode, new PositionParticleTransition.CommandSegment()),
+        AWAY_FROM_POSITION_TRANSITION(AwayFromPositionParticleTransition::decode, new AwayFromPositionParticleTransition.CommandSegment()),
         SCALE_TRANSITION(ScaleParticleTransition::decode, new ScaleParticleTransition.CommandSegment()),
         FOLLOW_ENTITY(FollowEntityParticleTransition::decode, new FollowEntityParticleTransition.CommandSegment()),
         VELOCITY_TRANSITION(VelocityParticleTransition::decode, new VelocityParticleTransition.CommandSegment())/*,
