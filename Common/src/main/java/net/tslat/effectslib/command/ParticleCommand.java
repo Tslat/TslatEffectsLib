@@ -183,7 +183,7 @@ public final class ParticleCommand implements Command<CommandSourceStack> {
 					StringBuilder valueBuilder = new StringBuilder();
 
 					if (propertiesReader.canRead()) {
-						String read = propertiesReader.readUnquotedString();
+						String read = readPropertyFromString(propertiesReader);
 
 						if (propertiesReader.canRead() && propertiesReader.peek() == ' ')
 							propertiesReader.skip();
@@ -209,6 +209,24 @@ public final class ParticleCommand implements Command<CommandSourceStack> {
 				throw new CommandSyntaxException(new SimpleCommandExceptionType(exceptionMsg), exceptionMsg);
 			}
 		}
+	}
+
+	private static String readPropertyFromString(final StringReader reader) {
+		final int start = reader.getCursor();
+
+		while (reader.canRead() && isAllowedInPropertyValue(reader.peek())) {
+			reader.skip();
+		}
+		return reader.getString().substring(start, reader.getCursor());
+	}
+
+	private static boolean isAllowedInPropertyValue(final char c) {
+		return c >= '0' && c <= '9'
+				|| c >= 'A' && c <= 'Z'
+				|| c >= 'a' && c <= 'z'
+				|| c == '_' || c == '-'
+				|| c == '.' || c == '+'
+				|| c == ',' || c == ';';
 	}
 
 	private static int printProperties(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
