@@ -15,7 +15,7 @@ import net.tslat.effectslib.networking.packet.MultiloaderPacket;
 public class TELNetworkingNeoForge implements TELNetworking {
 	@Override
 	public <P extends MultiloaderPacket> void registerPacketInternal(ResourceLocation id, Class<P> packetClass, FriendlyByteBuf.Reader<P> decoder) {
-		TslatEffectsLib.packetRegistrar.play(id, decoder, (packet, context) -> packet.receiveMessage(context.player().get(), context.workHandler()::execute));
+		TslatEffectsLib.packetRegistrar.play(id, decoder, (packet, context) -> packet.receiveMessage(context.player().orElseGet(null), context.workHandler()::execute));
 	}
 
 	/**
