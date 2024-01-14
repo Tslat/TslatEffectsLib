@@ -289,7 +289,7 @@ public final class ParticleBuilder {
      * <p>May not work on all particle types</p>
      */
     public ParticleBuilder colourOverride(float red, float green, float blue, float alpha) {
-        return colourOverride((int)(alpha * 255), (int)(red * 255), (int)(green * 255), (int)(blue * 255));
+        return colourOverride((int)(red * 255), (int)(green * 255), (int)(blue * 255), (int)(alpha * 255));
     }
 
     /**
