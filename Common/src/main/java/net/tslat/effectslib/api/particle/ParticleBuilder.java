@@ -50,7 +50,8 @@ public final class ParticleBuilder {
     private boolean force = false;
     private boolean ambient = false;
 
-    private Vec3 velocity = Vec3.ZERO;
+    private Vec3 velocity = null;
+    private Vec3 power = Vec3.ZERO;
     private Integer colourOverride = null;
     private int lifespan = 0;
     private float gravity = Float.MAX_VALUE;
@@ -233,7 +234,7 @@ public final class ParticleBuilder {
     }
 
     /**
-     * Set the particle's initial velocity (if applicable)
+     * Set the particle's initial velocity override (if applicable)
      * <p>May not work on all particle types</p>
      */
     public ParticleBuilder velocity(Vec3 velocity) {
@@ -249,6 +250,18 @@ public final class ParticleBuilder {
      */
     public ParticleBuilder velocity(double x, double y, double z) {
         return velocity(new Vec3(x, y, z));
+    }
+
+    /**
+     * Set the particle's initial 'power' (if applicable)
+     * <p>This is somewhat of a magic value that vanilla uses to set initial values on particles. Usually influences speed or distance from origin point</p>
+     * <p>May not work on all particle types</p>
+     */
+    public ParticleBuilder power(Vec3 power) {
+        this.power = power;
+        this.isSimple = false;
+
+        return this;
     }
 
     /**
@@ -289,7 +302,7 @@ public final class ParticleBuilder {
      * <p>May not work on all particle types</p>
      */
     public ParticleBuilder colourOverride(float red, float green, float blue, float alpha) {
-        return colourOverride((int)(alpha * 255), (int)(red * 255), (int)(green * 255), (int)(blue * 255));
+        return colourOverride((int)(red * 255), (int)(green * 255), (int)(blue * 255), (int)(alpha * 255));
     }
 
     /**
@@ -305,7 +318,7 @@ public final class ParticleBuilder {
      * <p>May not work on all particle types</p>
      */
     public ParticleBuilder colourOverride(int argb) {
-        this.colourOverride = argb;
+        this.colourOverride = (argb & -67108864) == 0 ? argb | -16777216 : argb;
         this.isSimple = false;
 
         return this;
@@ -382,8 +395,13 @@ public final class ParticleBuilder {
         return this.particleCount;
     }
 
+    @Nullable
     public Vec3 getVelocity() {
         return this.velocity;
+    }
+
+    public Vec3 getPower() {
+        return this.power;
     }
 
     public double getCutoffDistance() {
@@ -504,9 +522,14 @@ public final class ParticleBuilder {
         }
 
         buffer.writeVarInt(this.particlesPerPosition);
+        buffer.writeBoolean(this.velocity != null);
         buffer.writeDouble(this.velocity.x);
         buffer.writeDouble(this.velocity.y);
         buffer.writeDouble(this.velocity.z);
+
+        buffer.writeDouble(this.power.x);
+        buffer.writeDouble(this.power.y);
+        buffer.writeDouble(this.power.z);
 
         buffer.writeDouble(this.cutoffDistance);
         buffer.writeBoolean(this.force);
@@ -543,7 +566,8 @@ public final class ParticleBuilder {
 
         builder.isSimple = false;
         builder.particlesPerPosition = buffer.readVarInt();
-        builder.velocity = new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
+        builder.velocity = buffer.readBoolean() ? new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()) : null;
+        builder.power = new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
         builder.cutoffDistance = buffer.readDouble();
         builder.force = buffer.readBoolean();
         builder.ambient = buffer.readBoolean();
