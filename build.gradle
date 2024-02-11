@@ -97,13 +97,6 @@ subprojects {
     }
 
     publishing {
-        publications {
-            maven(MavenPublication) {
-                artifactId = archivesBaseName
-                from components.java
-            }
-        }
-
         repositories {
             maven {
                 name = "Cloudsmith"
@@ -113,31 +106,6 @@ subprojects {
                     password System.getenv("CLOUDSMITH_API_KEY")
                 }
             }
-        }
-
-        curseforge {
-            apiKey = System.getenv("CURSEFORGE_TOKEN")
-
-            project {
-                id = curseforge_id
-                changelog = 'https://github.com/Tslat/TslatEffectsLib/commits/1.20.4'
-                releaseType = 'release'
-                addGameVersion minecraft_version
-
-                mainArtifact(jar, artifact -> {
-                    artifact.displayName = "${project.mod_name} ${MODULE_NAME} ${project.minecraft_version}-${project.version}"
-                })
-            }
-        }
-
-        modrinth {
-            token = System.getenv("modrinthKey")
-            projectId = mod_id
-            versionNumber = project.version
-            versionType = "release"
-            uploadFile = jar
-            gameVersions = ["${project.minecraft_version}"]
-            loaders = ["${MODULE_NAME.toLowerCase()}"]
         }
     }
 }
