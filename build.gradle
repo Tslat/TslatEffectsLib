@@ -1,5 +1,7 @@
 plugins {
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.7"
+    id 'io.github.CDAGaming.cursegradle' version '1.6.+'
+    id 'com.modrinth.minotaur' version '2.8.+'
 }
 
 subprojects {
@@ -7,9 +9,31 @@ subprojects {
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'maven-publish'
+    apply plugin: 'io.github.CDAGaming.cursegradle'
+    apply plugin: 'com.modrinth.minotaur'
 
     java.toolchain.languageVersion = JavaLanguageVersion.of(17)
     java.withSourcesJar()
+
+    ext.projectProperties = [
+            mod_id: mod_id,
+            mod_name: mod_name,
+            mod_version: version,
+            minecraft_version: minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            forge_version: forge_version,
+            forge_version_range: forge_version_range,
+            forge_loader_version_range: forge_loader_version_range,
+            neoforge_version: neoforge_version,
+            neoforge_version_range: neoforge_version_range,
+            neoforge_loader_version_range: neoforge_loader_version_range,
+            fabric_version: fabric_version,
+            fabric_loader_version: fabric_loader_version
+    ]
+    def MODULE_NAME = it.name
+    def IS_COMMON = MODULE_NAME == "Common"
+
+    archivesBaseName = "${mod_name}-${MODULE_NAME.toLowerCase()}-${minecraft_version}"
         
     jar {
         manifest {
@@ -31,15 +55,35 @@ subprojects {
 
     repositories {
         mavenCentral()
+        maven { url = 'https://maven.parchmentmc.org' }
+    }
 
-        maven {
-            name = 'Sponge / Mixin'
-            url = 'https://repo.spongepowered.org/repository/maven-public/'
+    if (!IS_COMMON) {
+        sourceSets.main.resources.srcDirs += 'src/generated/resources'
+
+        dependencies {
+            compileOnly project(":Common")
         }
 
-        maven {
-            name = "Forge"
-            url = 'https://maven.minecraftforge.net'
+        tasks.withType(JavaCompile).matching(it2 -> !it2.name.startsWith("neo")).configureEach {
+            source(project(":Common").sourceSets.main.allSource)
+        }
+
+        sourcesJar {
+            from(project(":Common").sourceSets.main.allSource)
+        }
+
+        processResources {
+            from project(":Common").sourceSets.main.resources
+            inputs.properties project.ext.projectProperties
+            project.ext.projectProperties.put 'project', project
+
+            filesMatching(['META-INF/mods.toml', 'fabric.mod.json', 'pack.mcmeta']) {
+                expand project.ext.projectProperties
+            }
+
+            if (!MODULE_NAME.equals("Common") && !MODULE_NAME.equals("Fabric"))
+                exclude '**/*.accesswidener'
         }
     }
 
@@ -53,6 +97,13 @@ subprojects {
     }
 
     publishing {
+        publications {
+            maven(MavenPublication) {
+                artifactId = archivesBaseName
+                from components.java
+            }
+        }
+
         repositories {
             maven {
                 name = "Cloudsmith"
@@ -62,6 +113,31 @@ subprojects {
                     password System.getenv("CLOUDSMITH_API_KEY")
                 }
             }
+        }
+
+        curseforge {
+            apiKey = System.getenv("CURSEFORGE_TOKEN")
+
+            project {
+                id = curseforge_id
+                changelog = 'https://github.com/Tslat/TslatEffectsLib/commits/1.20.4'
+                releaseType = 'release'
+                addGameVersion minecraft_version
+
+                mainArtifact(jar, artifact -> {
+                    artifact.displayName = "${project.mod_name} ${MODULE_NAME} ${project.minecraft_version}-${project.version}"
+                })
+            }
+        }
+
+        modrinth {
+            token = System.getenv("modrinthKey")
+            projectId = mod_id
+            versionNumber = project.version
+            versionType = "release"
+            uploadFile = jar
+            gameVersions = ["${project.minecraft_version}"]
+            loaders = ["${MODULE_NAME.toLowerCase()}"]
         }
     }
 }

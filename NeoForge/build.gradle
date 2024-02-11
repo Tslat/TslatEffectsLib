@@ -1,10 +1,6 @@
 plugins {
     id 'net.neoforged.gradle.userdev' version '7.+'
-    id 'io.github.CDAGaming.cursegradle' version '1.6.1'
-    id 'com.modrinth.minotaur' version '2.8.3'
 }
-
-archivesBaseName = "${mod_name}-neoforge-${minecraft_version}"
 
 minecraft.accessTransformers.file file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -24,85 +20,13 @@ runs {
         modSource project(":Common").sourceSets.main
     }
 
-    client {
-        //taskName 'Client'
-    }
+    client {}
 
     server {
-        //taskName 'Server'
-        //args '--nogui'
+        programArgument '--nogui'
     }
 }
-
-sourceSets.main.resources.srcDir 'src/generated/resources'
 
 dependencies {
     implementation "net.neoforged:neoforge:${neoforge_version}"
-    compileOnly project(":Common")
-}
-
-tasks.withType(JavaCompile).matching(it -> !it.name.startsWith("neo")).configureEach {
-    source(project(":Common").sourceSets.main.allSource)
-}
-
-sourcesJar {
-    from(project(":Common").sourceSets.main.allSource)
-}
-
-def replaceProperties = [
-        mod_id: mod_id,
-        mod_name: mod_name,
-        mod_version: version,
-        minecraft_version: minecraft_version,
-        minecraft_version_range: minecraft_version_range,
-        neoforge_version: neoforge_version,
-        neoforge_version_range: neoforge_version_range,
-        neoforge_loader_version_range: neoforge_loader_version_range
-]
-
-processResources {
-    from project(":Common").sourceSets.main.resources
-    inputs.properties replaceProperties
-    replaceProperties.put 'project', project
-
-    filesMatching('META-INF/mods.toml') {
-        expand replaceProperties
-    }
-
-    exclude '**/*.accesswidener'
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            artifactId = archivesBaseName
-            artifact jar
-            artifact sourcesJar
-        }
-    }
-}
-
-curseforge {
-    apiKey = System.getenv("CURSEFORGE_TOKEN")
-
-    project {
-        id = curseforge_id
-        changelog = 'https://github.com/Tslat/TslatEffectsLib/commits/1.20.4'
-        releaseType = 'release'
-        addGameVersion minecraft_version
-
-        mainArtifact(jar) {
-            it.displayName = "${project.mod_name} NeoForge ${project.minecraft_version}-${project.version}"
-        }
-    }
-}
-
-modrinth {
-    token = System.getenv("modrinthKey")
-    projectId = mod_id
-    versionNumber = project.version
-    versionType = "release"
-    uploadFile = jar
-    gameVersions = ["${project.minecraft_version}"]
-    loaders = ["neoforge"]
 }

@@ -1,10 +1,6 @@
 plugins {
-    id 'fabric-loom' version '1.4.+'
-    id 'io.github.CDAGaming.cursegradle' version '1.6.1'
-    id 'com.modrinth.minotaur' version '2.8.3'
+    id 'fabric-loom' version '1.5.+'
 }
-
-archivesBaseName = "${mod_name}-fabric-${minecraft_version}"
 
 repositories {
     maven {
@@ -21,9 +17,7 @@ dependencies {
     }
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
-    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-item:${project.cardinal_components_version}"
-    include "dev.onyxstudios.cardinal-components-api:cardinal-components-item:${project.cardinal_components_version}"
-    implementation project(":Common")
+    include modImplementation("dev.onyxstudios.cardinal-components-api:cardinal-components-item:${project.cardinal_components_version}")
 }
 
 loom {
@@ -47,64 +41,10 @@ loom {
     mixin {
         defaultRefmapName.convention("${mod_id}.refmap.json")
     }
-
-    //accessWidenerPath = file("${project(':Common').projectDir.path}/src/main/resources/smartbrainlib.accesswidener")
-}
-
-processResources {
-    from project(":Common").sourceSets.main.resources
-    inputs.property "version", project.version
-
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
-    }
-}
-
-tasks.withType(JavaCompile) {
-    source(project(":Common").sourceSets.main.allSource)
-}
-
-sourcesJar {
-    from(project(":Common").sourceSets.main.allSource)
 }
 
 publishing {
-    publications {
-        maven(MavenPublication) {
-            artifactId = archivesBaseName
-            from components.java
-        }
+    modrinth {
+        uploadFile = remapJar
     }
-}
-
-idea {
-    module {
-        inheritOutputDirs = false
-        outputDir = compileJava.destinationDirectory.asFile.get() as File
-    }
-}
-
-curseforge {
-    apiKey = System.getenv("CURSEFORGE_TOKEN")
-
-    project {
-        id = curseforge_id
-        changelog = 'https://github.com/Tslat/TslatEffectsLib/commits/1.20.4'
-        releaseType = 'release'
-        addGameVersion minecraft_version
-
-        mainArtifact(remapJar) {
-            it.displayName = "${project.mod_name} Fabric ${project.minecraft_version}-${project.version}"
-        }
-    }
-}
-
-modrinth {
-    token = System.getenv("modrinthKey")
-    projectId = mod_id
-    versionNumber = project.version
-    versionType = "release"
-    uploadFile = remapJar
-    gameVersions = ["${project.minecraft_version}"]
-    loaders = ["fabric"]
 }
