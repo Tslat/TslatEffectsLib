@@ -59,6 +59,7 @@ public final class ParticleCommand implements Command<CommandSourceStack> {
 			if (value)
 				builder.isAmbient();
 		}));
+		map.put("power", new ParticlePropertyParser<>("<x,y,z>", ParticlePropertyParser::parseVec3, ParticleBuilder::power));
 		map.put("velocity", new ParticlePropertyParser<>("<x,y,z>", ParticlePropertyParser::parseVec3, ParticleBuilder::velocity));
 		map.put("colour", new ParticlePropertyParser<>("<red,green,blue,alpha>", ParticlePropertyParser::parseColour, ParticleBuilder::colourOverride));
 		map.put("lifespan", new ParticlePropertyParser<>("<tickLifespan>", ParticlePropertyParser::parseInt, ParticleBuilder::lifespan));
