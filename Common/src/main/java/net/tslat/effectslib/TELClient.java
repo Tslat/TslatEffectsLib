@@ -72,7 +72,7 @@ public final class TELClient {
             return;
 
         double cutoffDist = particleBuilder.getShouldForce() ? -1 : Math.pow(particleBuilder.getCutoffDistance(), 2);
-        Vec3 velocity = particleBuilder.getVelocity();
+        Vec3 power = particleBuilder.getPower();
         RandomSource random = particleBuilder.getRandom();
 
         for (int i = 0; i < particleBuilder.getCount(); i++) {
@@ -82,10 +82,13 @@ public final class TELClient {
                 continue;
 
             for (int j = 0; j < particleBuilder.getCountPerPosition(); j++) {
-                Particle particle = mc.particleEngine.createParticle(particleBuilder.getParticle(), pos.x, pos.y, pos.z, velocity.x, velocity.y, velocity.z);
+                Particle particle = mc.particleEngine.createParticle(particleBuilder.getParticle(), pos.x, pos.y, pos.z, power.x, power.y, power.z);
 
                 if (particle == null)
                     continue;
+
+                if (particleBuilder.getVelocity() != null)
+                    particle.setParticleSpeed(particleBuilder.getVelocity().x, particleBuilder.getVelocity().y, particleBuilder.getVelocity().z);
 
                 if (particleBuilder.getColourOverride() != null) {
                     int colour = particleBuilder.getColourOverride();
