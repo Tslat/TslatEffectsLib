@@ -52,7 +52,7 @@ public class RandomInRadiusParticlePosition implements ParticlePositionWorker<Ra
     @Override
     public @NotNull Vec3 supplyPosition(Level level, RandomSource random) {
         int attempts = 0;
-        Vec3 pos = this.origin.add(random.nextGaussian(), 0, random.nextGaussian());
+        Vec3 pos = this.origin.add(random.nextGaussian() * this.radius, 0, random.nextGaussian() * this.radius);
 
         while (attempts++ < 10) {
             if (pos.distanceToSqr(this.origin) <= this.radius * this.radius)
