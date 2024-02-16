@@ -523,9 +523,12 @@ public final class ParticleBuilder {
 
         buffer.writeVarInt(this.particlesPerPosition);
         buffer.writeBoolean(this.velocity != null);
-        buffer.writeDouble(this.velocity.x);
-        buffer.writeDouble(this.velocity.y);
-        buffer.writeDouble(this.velocity.z);
+
+        if (this.velocity != null) {
+            buffer.writeDouble(this.velocity.x);
+            buffer.writeDouble(this.velocity.y);
+            buffer.writeDouble(this.velocity.z);
+        }
 
         buffer.writeDouble(this.power.x);
         buffer.writeDouble(this.power.y);
