@@ -85,7 +85,7 @@ public class PositionParticleTransition implements ParticleTransitionWorker<Posi
     public static class CommandSegment implements CommandSegmentHandler<PositionParticleTransition> {
         @Override
         public ArgumentBuilder<CommandSourceStack, ?> constructArguments(CommandBuildContext context, CommandNode<CommandSourceStack> forward) {
-            return Commands.argument("position_transition_to_pos", Vec3Argument.vec3())
+            return Commands.argument("position_transition_to_pos", Vec3Argument.vec3(false))
                     .then(forward)
                     .then(Commands.argument("transition_time", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
                             .then(forward))

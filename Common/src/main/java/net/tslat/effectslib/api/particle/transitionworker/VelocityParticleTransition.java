@@ -72,7 +72,7 @@ public class VelocityParticleTransition implements ParticleTransitionWorker<Velo
     public static class CommandSegment implements CommandSegmentHandler<VelocityParticleTransition> {
         @Override
         public ArgumentBuilder<CommandSourceStack, ?> constructArguments(CommandBuildContext context, CommandNode<CommandSourceStack> forward) {
-            return Commands.argument("to_velocity", Vec3Argument.vec3())
+            return Commands.argument("to_velocity", Vec3Argument.vec3(false))
                     .then(forward)
                     .then(Commands.argument("transition_time", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
                             .then(forward));

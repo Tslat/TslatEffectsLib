@@ -63,7 +63,7 @@ public class RandomAtSphereEdgeParticlePosition implements ParticlePositionWorke
     public static class CommandSegment implements CommandSegmentHandler<RandomAtSphereEdgeParticlePosition> {
         @Override
         public ArgumentBuilder<CommandSourceStack, ?> constructArguments(CommandBuildContext context, CommandNode<CommandSourceStack> forward) {
-            return Commands.argument("center", Vec3Argument.vec3())
+            return Commands.argument("center", Vec3Argument.vec3(false))
                     .then(Commands.argument("radius", DoubleArgumentType.doubleArg(0, Double.MAX_VALUE))
                             .then(forward));
         }
