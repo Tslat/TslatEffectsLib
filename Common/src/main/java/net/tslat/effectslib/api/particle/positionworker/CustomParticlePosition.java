@@ -74,7 +74,7 @@ public class CustomParticlePosition implements ParticlePositionWorker<CustomPart
     public static class CommandSegment implements CommandSegmentHandler<CustomParticlePosition> {
         @Override
         public ArgumentBuilder<CommandSourceStack, ?> constructArguments(CommandBuildContext context, CommandNode<CommandSourceStack> forward) {
-            return Commands.argument("pos", Vec3Argument.vec3()).then(forward);
+            return Commands.argument("pos", Vec3Argument.vec3(false)).then(forward);
         }
 
         @Override

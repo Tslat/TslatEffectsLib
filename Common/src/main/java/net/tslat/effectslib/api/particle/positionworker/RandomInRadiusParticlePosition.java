@@ -70,7 +70,7 @@ public class RandomInRadiusParticlePosition implements ParticlePositionWorker<Ra
     public static class CommandSegment implements CommandSegmentHandler<RandomInRadiusParticlePosition> {
         @Override
         public ArgumentBuilder<CommandSourceStack, ?> constructArguments(CommandBuildContext context, CommandNode<CommandSourceStack> forward) {
-            return Commands.argument("center", Vec3Argument.vec3())
+            return Commands.argument("center", Vec3Argument.vec3(false))
                     .then(Commands.argument("radius", DoubleArgumentType.doubleArg(0, Double.MAX_VALUE))
                             .then(forward));
         }
