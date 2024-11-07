@@ -9,7 +9,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.tslat.effectslib.TELClient;
 import net.tslat.effectslib.api.util.CommandSegmentHandler;
 
@@ -88,7 +88,7 @@ public class ColourParticleTransition implements ParticleTransitionWorker<Colour
             }
             catch (Exception ignored) {}
 
-            return new ColourParticleTransition(FastColor.ARGB32.color(IntegerArgumentType.getInteger(context, "to_colour_alpha"), IntegerArgumentType.getInteger(context, "to_colour_red"), IntegerArgumentType.getInteger(context, "to_colour_green"), IntegerArgumentType.getInteger(context, "to_colour_blue")), transitionTime);
+            return new ColourParticleTransition(ARGB.color(IntegerArgumentType.getInteger(context, "to_colour_alpha"), IntegerArgumentType.getInteger(context, "to_colour_red"), IntegerArgumentType.getInteger(context, "to_colour_green"), IntegerArgumentType.getInteger(context, "to_colour_blue")), transitionTime);
         }
     }
 }

@@ -13,7 +13,7 @@ import org.jetbrains.annotations.ApiStatus;
 public class TELFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        ClientTickEvents.START_CLIENT_TICK.register(client -> TELClient.tickParticleTransitions());
+        ClientTickEvents.END_CLIENT_TICK.register(client -> TELClient.tickParticleTransitions());
     }
 
     public static void sendPacketToServer(MultiloaderPacket packet) {

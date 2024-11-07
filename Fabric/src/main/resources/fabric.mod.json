@@ -3,17 +3,17 @@
   "id": "${mod_id}",
   "version": "${version}",
 
-  "name": "${mod_name}",
-  "description": "${description}",
+  "name": "${mod_display_name}",
+  "description": "${mod_description}",
   "authors": [
-    "${authors}"
+    "${mod_authors}"
   ],
   "contact": {
     "homepage": "${homepage_url}",
     "sources": "${sources_url}"
   },
 
-  "license": "${license}",
+  "license": "${mod_license}",
   "icon": "logo.png",
 
   "environment": "*",

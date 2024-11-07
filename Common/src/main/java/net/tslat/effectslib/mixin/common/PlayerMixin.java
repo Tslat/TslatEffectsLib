@@ -3,6 +3,7 @@ package net.tslat.effectslib.mixin.common;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -70,14 +71,8 @@ public class PlayerMixin {
 		return damage;
 	}
 
-	@Inject(
-			method = "hurt",
-			at = @At(
-					value = "HEAD"
-			),
-			cancellable = true
-	)
-	private void tel$checkIncomingAttack(DamageSource damageSource, float damage, CallbackInfoReturnable<Boolean> callback) {
+	@Inject(method = "hurtServer", at = @At(value = "HEAD"), cancellable = true)
+	private void tel$checkIncomingAttack(ServerLevel level, DamageSource damageSource, float damage, CallbackInfoReturnable<Boolean> callback) {
 		if (tel$checkEffectAttackCancellation((LivingEntity)(Object)this, damageSource, damage))
 			callback.setReturnValue(false);
 	}

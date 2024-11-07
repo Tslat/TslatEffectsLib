@@ -29,7 +29,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.tslat.effectslib.api.particle.ParticleBuilder;
@@ -296,7 +296,7 @@ public final class ParticleCommand implements Command<CommandSourceStack> {
 			return parseOrError(() -> {
 				String[] components = valueString.split(",");
 
-				return FastColor.ARGB32.color(Mth.clamp(Integer.parseInt(components[3]), 0, 255), Mth.clamp(Integer.parseInt(components[0]), 0, 255), Mth.clamp(Integer.parseInt(components[1]), 0, 255), Mth.clamp(Integer.parseInt(components[2]), 0, 255));
+				return ARGB.color(Mth.clamp(Integer.parseInt(components[3]), 0, 255), Mth.clamp(Integer.parseInt(components[0]), 0, 255), Mth.clamp(Integer.parseInt(components[1]), 0, 255), Mth.clamp(Integer.parseInt(components[2]), 0, 255));
 			}, ex -> Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(new StringReader(ex)));
 		}
 

@@ -3,9 +3,9 @@ package net.tslat.effectslib;
 import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.ParticleStatus;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.util.FastColor;
+import net.minecraft.server.level.ParticleStatus;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -99,8 +99,8 @@ public final class TELClient {
                 if (particleBuilder.getColourOverride() != null) {
                     int colour = particleBuilder.getColourOverride();
 
-                    particle.setColor(FastColor.ARGB32.red(colour) / 255f, FastColor.ARGB32.green(colour) / 255f, FastColor.ARGB32.blue(colour) / 255f);
-                    particle.setAlpha(FastColor.ARGB32.alpha(colour) / 255f);
+                    particle.setColor(ARGB.red(colour) / 255f, ARGB.green(colour) / 255f, ARGB.blue(colour) / 255f);
+                    particle.setAlpha(ARGB.alpha(colour) / 255f);
                 }
 
                 if (particleBuilder.getLifespan() > 0)
@@ -128,16 +128,16 @@ public final class TELClient {
             killTickSetter.accept(TELClient.getGameTick() + particle.getLifetime());
 
         if (fromColourGetter == null)
-            startPosSetter.accept(fromColourGetter = new MemoizedFunction<>(obj2 -> FastColor.ARGB32.color((int)(particle.alpha * 255), (int)(particle.rCol * 255), (int)(particle.gCol * 255), (int)(particle.bCol * 255))));
+            startPosSetter.accept(fromColourGetter = new MemoizedFunction<>(obj2 -> ARGB.color((int)(particle.alpha * 255), (int)(particle.rCol * 255), (int)(particle.gCol * 255), (int)(particle.bCol * 255))));
 
         final float transitionProgress = ParticleTransitionWorker.getTransitionProgress(particle.age, particle.getLifetime(), transitionTime);
         final int fromColour = fromColourGetter.apply(particle);
 
         particle.setColor(
-                Mth.lerpInt(transitionProgress, FastColor.ARGB32.red(fromColour), FastColor.ARGB32.red(toColour)) / 255f,
-                Mth.lerpInt(transitionProgress, FastColor.ARGB32.green(fromColour), FastColor.ARGB32.green(toColour)) / 255f,
-                Mth.lerpInt(transitionProgress, FastColor.ARGB32.blue(fromColour), FastColor.ARGB32.blue(toColour)) / 255f);
-        particle.setAlpha(Mth.lerpInt(transitionProgress, FastColor.ARGB32.alpha(fromColour), FastColor.ARGB32.alpha(toColour)) / 255f);
+                Mth.lerpInt(transitionProgress, ARGB.red(fromColour), ARGB.red(toColour)) / 255f,
+                Mth.lerpInt(transitionProgress, ARGB.green(fromColour), ARGB.green(toColour)) / 255f,
+                Mth.lerpInt(transitionProgress, ARGB.blue(fromColour), ARGB.blue(toColour)) / 255f);
+        particle.setAlpha(Mth.lerpInt(transitionProgress, ARGB.alpha(fromColour), ARGB.alpha(toColour)) / 255f);
 
         return particle.isAlive();
     }

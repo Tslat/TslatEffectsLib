@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -16,7 +17,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.consume_effects.ConsumeEffect;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -114,8 +115,10 @@ public class ExtendedMobEffect extends MobEffect {
 	public void onRemoval(MobEffectInstance effectInstance, LivingEntity entity) {}
 
 	/**
-	 * Handle for when the effect is being removed from the entity.<br>
+	 * Handle for when the effect is being removed from the entity.
+	 * <p>
 	 * This callback is <u>not</u> called when the effect is being removed by expiration. See {@link ExtendedMobEffect#onExpiry}
+	 *
 	 * @param effectInstance Effect instance for the effect.
 	 * @param entity The entity the effect is being removed from
 	 * @return true to proceed with removing, or false to prevent the effect being removed
@@ -127,8 +130,10 @@ public class ExtendedMobEffect extends MobEffect {
 	}
 
 	/**
-	 * Handle for when the effect has expired (run its timer out)<br>
+	 * Handle for when the effect has expired (run its timer out)
+	 * <p>
 	 * The effect has already been removed from the entity at this stage
+	 *
 	 * @param effectInstance Effect instance for the effect
 	 * @param entity The entity the effect was removed from
 	 */
@@ -136,6 +141,7 @@ public class ExtendedMobEffect extends MobEffect {
 
 	/**
 	 * Check whether this effect should tick on the current tick.
+	 *
 	 * @see MobEffect#shouldApplyEffectTickThisTick(int, int)
 	 * @param effectInstance Effect instance for the effect. Marked with nullable so that the vanilla methods can be routed through for completeness
 	 * @param entity The entity the effect is ticking on
@@ -244,17 +250,6 @@ public class ExtendedMobEffect extends MobEffect {
 	public void afterOutgoingAttack(LivingEntity entity, LivingEntity victim, MobEffectInstance effectInstance, DamageSource source, float amount) {}
 
 	/**
-	 * Handle whether an effect should be cured by a player or entity consuming this item.
-	 * @param effectInstance The MobEffectInstance to be cured
-	 * @param stack The ItemStack of the item being consumed
-	 * @param entity The entity consuming the item
-	 * @return true if the effect should be cured by consuming this item
-	 */
-	public boolean shouldCureEffect(MobEffectInstance effectInstance, ItemStack stack, LivingEntity entity) {
-		return stack.getItem() == Items.MILK_BUCKET;
-	}
-
-	/**
 	 * Handle whether an effect should be removed when the player consumes a Totem of Undying
 	 *
 	 * @param effectInstance The effect instance applied to the entity
@@ -262,6 +257,20 @@ public class ExtendedMobEffect extends MobEffect {
 	 * @return Whether the effect should be removed or not
 	 */
 	public boolean shouldBeRemovedByTotemOfDeath(MobEffectInstance effectInstance, LivingEntity entity) {
+		return true;
+	}
+
+	/**
+	 * Check whether a given ConsumeEffect instance should run when dying with this effect active.
+	 *
+	 * @param effectInstance The effect instance applied to the entity
+	 * @param entity The entity the effect is applied to
+	 * @param stack The ItemStack the death protection consumer came from
+	 * @param consumer The death protection consumer
+	 * @param alreadyCancelled Whether the consumer has already been cancelled or not. Consumers can not be un-cancelled by returning true
+	 * @return true to allow the consumer to run, or false to skip it
+	 */
+	public boolean checkDeathProtectionConsumer(MobEffectInstance effectInstance, LivingEntity entity, ItemStack stack, ConsumeEffect consumer, boolean alreadyCancelled) {
 		return true;
 	}
 
@@ -315,7 +324,7 @@ public class ExtendedMobEffect extends MobEffect {
 	 * Disabled, use {@link ExtendedMobEffect#tick(LivingEntity, MobEffectInstance, int)}
 	 */
 	@Override
-	public final boolean applyEffectTick(LivingEntity entity, int amplifier) {
+	public final boolean applyEffectTick(ServerLevel level, LivingEntity entity, int amplifier) {
 		return tick(entity, null, amplifier);
 	}
 
@@ -323,7 +332,7 @@ public class ExtendedMobEffect extends MobEffect {
 	 * Disabled, use {@link ExtendedMobEffect#onApplication(MobEffectInstance, Entity, LivingEntity, int)}
 	 */
 	@Override
-	public final void applyInstantenousEffect(@Nullable Entity source, @Nullable Entity indirectSource, LivingEntity entity, int amplifier, double sourceModifier) {
+	public void applyInstantenousEffect(ServerLevel level, @Nullable Entity source, @Nullable Entity indirectSource, LivingEntity entity, int amplifier, double sourceModifier) {
 		onApplication(null, source, entity, amplifier);
 
 		if (!isInstantenous())

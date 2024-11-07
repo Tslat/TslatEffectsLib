@@ -1,13 +1,12 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        mavenCentral()
-		
-		// Fabric
+
+        // Fabric
         exclusiveContent {
             forRepository {
                 maven {
-                    name = 'Fabric'
+                    name = "Fabric"
                     url = uri("https://maven.fabricmc.net")
                 }
             }
@@ -16,12 +15,12 @@ pluginManagement {
                 includeGroup("fabric-loom")
             }
         }
-		
-		// NeoForge
+
+        // NeoForge
         exclusiveContent {
             forRepository {
                 maven {
-                    name = 'NeoForge'
+                    name = "NeoForge"
                     url = uri("https://maven.neoforged.net/releases")
                 }
             }
@@ -30,12 +29,12 @@ pluginManagement {
                 includeGroup("codechicken")
             }
         }
-		
-		// Forge
+
+        // Forge
         exclusiveContent {
             forRepository {
                 maven {
-                    name = 'Forge'
+                    name = "Forge"
                     url = uri("https://maven.minecraftforge.net/")
                 }
             }
@@ -43,12 +42,12 @@ pluginManagement {
                 includeGroupAndSubgroups("net.minecraftforge")
             }
         }
-		
-		// Mixin
+
+        // Mixin
         exclusiveContent {
             forRepository {
                 maven {
-                    name = 'SpongeForge'
+                    name = "SpongeForge"
                     url = uri("https://repo.spongepowered.org/repository/maven-public")
                 }
             }
@@ -57,11 +56,11 @@ pluginManagement {
             }
         }
 
-		// Parchment
+        // Parchment
         exclusiveContent {
             forRepository {
                 maven {
-                    name = 'Parchment'
+                    name = "Parchment"
                     url = uri("https://maven.parchmentmc.org")
                 }
             }
@@ -73,10 +72,10 @@ pluginManagement {
 }
 
 plugins {
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
-rootProject.name = 'tslateffectslib'
+rootProject.name = "tslateffectslib"
 include("common")
 include("fabric")
 include("forge")

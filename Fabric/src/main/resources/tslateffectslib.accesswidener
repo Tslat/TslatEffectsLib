@@ -4,7 +4,7 @@ extendable class net/minecraft/world/effect/MobEffect$AttributeTemplate
 accessible field net/minecraft/world/effect/MobEffect attributeModifiers Ljava/util/Map;
 
 # PARTICLE
-accessible method net/minecraft/client/renderer/LevelRenderer calculateParticleLevel (Z)Lnet/minecraft/client/ParticleStatus;
+accessible method net/minecraft/client/renderer/LevelRenderer calculateParticleLevel (Z)Lnet/minecraft/server/level/ParticleStatus;
 accessible method net/minecraft/client/particle/Particle setAlpha (F)V
 accessible method net/minecraft/client/particle/SpellParticle setAlpha (F)V
 accessible field net/minecraft/client/particle/Particle gravity F
@@ -13,6 +13,9 @@ accessible field net/minecraft/client/particle/Particle age I
 accessible field net/minecraft/client/particle/Particle x D
 accessible field net/minecraft/client/particle/Particle y D
 accessible field net/minecraft/client/particle/Particle z D
+accessible field net/minecraft/client/particle/Particle xo D
+accessible field net/minecraft/client/particle/Particle yo D
+accessible field net/minecraft/client/particle/Particle zo D
 accessible field net/minecraft/client/particle/Particle alpha F
 accessible field net/minecraft/client/particle/Particle rCol F
 accessible field net/minecraft/client/particle/Particle gCol F

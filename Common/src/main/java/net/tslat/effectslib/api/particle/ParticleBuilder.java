@@ -2,6 +2,7 @@ package net.tslat.effectslib.api.particle;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
@@ -9,7 +10,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -348,7 +349,7 @@ public final class ParticleBuilder {
      * <p>May not work on all particle types</p>
      */
     public ParticleBuilder colourOverride(int red, int green, int blue, int alpha) {
-        return colourOverride(FastColor.ARGB32.color(alpha, red, green, blue));
+        return colourOverride(ARGB.color(alpha, red, green, blue));
     }
 
     /**
@@ -594,7 +595,7 @@ public final class ParticleBuilder {
     }
 
     public static ParticleBuilder fromNetwork(final RegistryFriendlyByteBuf buffer) {
-        ParticleType<? extends ParticleOptions> particleType = BuiltInRegistries.PARTICLE_TYPE.get(buffer.readResourceLocation());
+        ParticleType<? extends ParticleOptions> particleType = BuiltInRegistries.PARTICLE_TYPE.get(buffer.readResourceLocation()).map(Holder.Reference::value).orElse(null);
 
         if (particleType == null)
             return new ParticleBuilder(null, null);

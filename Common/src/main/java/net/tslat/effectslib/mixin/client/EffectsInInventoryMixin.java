@@ -1,6 +1,6 @@
 package net.tslat.effectslib.mixin.client;
 
-import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.EffectsInInventory;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.tslat.effectslib.api.ExtendedMobEffect;
@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * Hook {@link ExtendedMobEffect#getDisplayName(MobEffectInstance)}
  */
-@Mixin(EffectRenderingInventoryScreen.class)
-public class EffectRenderingInventoryScreenMixin {
+@Mixin(EffectsInInventory.class)
+public class EffectsInInventoryMixin {
 	@Inject(
 			method = "getEffectName",
 			at = @At(

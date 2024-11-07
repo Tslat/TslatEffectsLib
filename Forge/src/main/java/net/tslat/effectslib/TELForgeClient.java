@@ -9,7 +9,7 @@ import net.minecraftforge.fml.common.Mod;
 public final class TELForgeClient {
     @SubscribeEvent
     public static void clientTick(final TickEvent.ClientTickEvent ev) {
-        if (ev.phase == TickEvent.Phase.START)
+        if (ev.phase == TickEvent.Phase.END)
             TELClient.tickParticleTransitions();
     }
 }

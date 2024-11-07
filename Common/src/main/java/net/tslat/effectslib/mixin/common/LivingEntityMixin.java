@@ -5,10 +5,12 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
@@ -25,21 +27,17 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
 	@Shadow
-	@Final
-	private Map<MobEffect, MobEffectInstance> activeEffects;
-	@Shadow
-	protected abstract void onEffectRemoved(MobEffectInstance pEffectInstance);
-	@Shadow
 	public abstract Collection<MobEffectInstance> getActiveEffects();
+
+	@Shadow protected abstract void onEffectsRemoved(Collection<MobEffectInstance> p_366501_);
+
+	@Shadow @Final private Map<Holder<MobEffect>, MobEffectInstance> activeEffects;
 
 	@WrapOperation(
 			method = "actuallyHurt",
@@ -92,13 +90,13 @@ public abstract class LivingEntityMixin {
 	}
 
 	@Inject(
-			method = "hurt",
+			method = "hurtServer",
 			at = @At(
 					value = "HEAD"
 			),
 			cancellable = true
 	)
-	private void tel$checkCancellation(DamageSource damageSource, float damage, CallbackInfoReturnable<Boolean> callback) {
+	private void tel$checkCancellation(ServerLevel level,  DamageSource damageSource, float damage, CallbackInfoReturnable<Boolean> callback) {
 		if (tel$checkEffectAttackCancellation((LivingEntity)(Object)this, damageSource, damage))
 			callback.setReturnValue(false);
 	}
@@ -140,33 +138,6 @@ public abstract class LivingEntityMixin {
 		return original.call(existingEffect, newEffect);
 	}
 
-	@WrapOperation(
-			method = "checkTotemDeathProtection",
-			at = @At(
-					value = "INVOKE",
-					target = "Lnet/minecraft/world/entity/LivingEntity;removeAllEffects()Z"
-			)
-	)
-	private boolean tel$checkTotemUndyingClear(LivingEntity entity, Operation<Boolean> original) {
-		if (entity.level().isClientSide())
-			return false;
-
-		boolean hasRemoved = false;
-
-		for (Iterator<MobEffectInstance> iterator = this.activeEffects.values().iterator(); iterator.hasNext();) {
-			MobEffectInstance instance = iterator.next();
-
-			if (!(instance.getEffect().value() instanceof ExtendedMobEffect extendedEffect) || extendedEffect.shouldBeRemovedByTotemOfDeath(instance, entity)) {
-				onEffectRemoved(instance);
-				iterator.remove();
-
-				hasRemoved = true;
-			}
-		}
-
-		return hasRemoved;
-	}
-
 	@Inject(
 			method = "removeEffect",
 			at = @At(value = "HEAD"),
@@ -181,70 +152,40 @@ public abstract class LivingEntityMixin {
 		}
 	}
 
-    @WrapOperation(
+	@WrapOperation(
 			method = "removeAllEffects",
 			at = @At(
 					value = "INVOKE",
-					target = "Ljava/util/Collection;iterator()Ljava/util/Iterator;"
+					target = "Lnet/minecraft/world/entity/LivingEntity;onEffectsRemoved(Ljava/util/Collection;)V"
 			)
 	)
-	private Iterator<MobEffectInstance> tel$wrapRemoveAllEffects(Collection<MobEffectInstance> collection, Operation<Iterator<MobEffectInstance>> original) {
-		final LivingEntity entity = (LivingEntity)(Object)this;
+	private void tel$captureRemovingEffectsMap(LivingEntity entity, Collection<MobEffectInstance> effects, Operation<Void> original) {
+		for (Iterator<MobEffectInstance> iterator = effects.iterator(); iterator.hasNext();) {
+			MobEffectInstance effectInstance = iterator.next();
 
-		return new Iterator<>() {
-			final Iterator<MobEffectInstance> iterator = collection.iterator();
-			MobEffectInstance next = null;
-
-			@Override
-			public boolean hasNext() {
-				if (!this.iterator.hasNext())
-					return false;
-
-				if (this.next != null)
-					return true;
-
-				this.next = this.iterator.next();
-
-				if (this.next.getEffect().value() instanceof ExtendedMobEffect extendedEffect && !extendedEffect.onRemove(this.next, entity)) {
-					this.next = null;
-
-					return hasNext();
-				}
-
-				return true;
+			if (effectInstance.getEffect().value() instanceof ExtendedMobEffect extendedEffect && !extendedEffect.onRemove(effectInstance, entity)) {
+				iterator.remove();
+				this.activeEffects.put(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(extendedEffect), effectInstance);
 			}
+		}
 
-			@Override
-			public MobEffectInstance next() {
-				if (this.next != null) {
-					MobEffectInstance nextPrev = this.next;
-					this.next = null;
-
-					return nextPrev;
-				}
-
-				return this.iterator.next();
-			}
-
-			@Override
-			public void remove() {
-				this.iterator.remove();
-			}
-		};
+		original.call(entity, effects);
 	}
 
 	@WrapOperation(
 			method = "tickEffects",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/world/entity/LivingEntity;onEffectRemoved(Lnet/minecraft/world/effect/MobEffectInstance;)V"
+					target = "Lnet/minecraft/world/entity/LivingEntity;onEffectsRemoved(Ljava/util/Collection;)V"
 			)
 	)
-	private void tel$onEffectExpired(LivingEntity instance, MobEffectInstance effectInstance, Operation<Void> original) {
-		original.call(instance, effectInstance);
+	private void tel$onEffectExpired(LivingEntity entity, Collection<MobEffectInstance> effects, Operation<Void> original) {
+		original.call(entity, effects);
 
-		if (effectInstance.getEffect().value() instanceof ExtendedMobEffect extendedEffect)
-			extendedEffect.onExpiry(effectInstance, instance);
+		for (MobEffectInstance effectInstance : effects) {
+			if (effectInstance.getEffect().value() instanceof ExtendedMobEffect extendedEffect)
+				extendedEffect.onExpiry(effectInstance, entity);
+		}
 	}
 
 	@Inject(

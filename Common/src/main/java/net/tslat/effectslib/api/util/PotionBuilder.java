@@ -97,7 +97,7 @@ public final class PotionBuilder {
 
 		this.displayName.ifPresent(name -> stack.set(DataComponents.CUSTOM_NAME, name));
 		this.lore.ifPresent(lore -> stack.set(DataComponents.LORE, new ItemLore(lore)));
-		stack.set(DataComponents.POTION_CONTENTS, new PotionContents(this.potion, this.colour, this.effects));
+		stack.set(DataComponents.POTION_CONTENTS, new PotionContents(this.potion, this.colour, this.effects, Optional.empty()));
 
 		return stack;
 	}
