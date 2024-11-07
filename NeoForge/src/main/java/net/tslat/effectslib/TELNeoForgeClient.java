@@ -8,7 +8,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 @EventBusSubscriber(value = Dist.CLIENT)
 public final class TELNeoForgeClient {
     @SubscribeEvent
-    public static void clientTick(final ClientTickEvent.Pre ev) {
+    public static void clientTick(final ClientTickEvent.Post ev) {
         TELClient.tickParticleTransitions();
     }
 }
