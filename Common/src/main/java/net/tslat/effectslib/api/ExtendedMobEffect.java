@@ -34,6 +34,9 @@ public class ExtendedMobEffect extends MobEffect {
 	public ExtendedMobEffect(MobEffectCategory category, int color) {
 		super(category, color);
 	}
+	public ExtendedMobEffect(MobEffectCategory category, int color, ParticleOptions particle) {
+		super(category, color, particle)
+	}
 
 	/**
 	 * Get the display name of the effect instance. Used for rendering the effects in inventories. <br>
