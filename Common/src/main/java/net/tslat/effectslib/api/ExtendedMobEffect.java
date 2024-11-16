@@ -1,6 +1,7 @@
 package net.tslat.effectslib.api;
 
 import net.minecraft.core.Holder;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -34,8 +35,9 @@ public class ExtendedMobEffect extends MobEffect {
 	public ExtendedMobEffect(MobEffectCategory category, int color) {
 		super(category, color);
 	}
+
 	public ExtendedMobEffect(MobEffectCategory category, int color, ParticleOptions particle) {
-		super(category, color, particle)
+		super(category, color, particle);
 	}
 
 	/**
