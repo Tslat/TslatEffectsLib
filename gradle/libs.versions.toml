@@ -1,6 +1,6 @@
 [versions]
 # Common
-tel = "1.10.1"
+tel = "1.10.2"
 minecraft-range = "[1.21.3,)"
 minecraft = "1.21.3"
 parchment-minecraft = "1.21"
@@ -10,21 +10,21 @@ jopt-simple = "5.0.4"
 java = "21"
 
 # Fabric
-fabric = "0.16.7"
+fabric = "0.16.9"
 fabric-range = "0.16"
-fabric-api = "0.107.0+1.21.3"
+fabric-api = "0.108.0+1.21.3"
 fabric-api-range = "0.106.0+1.21.3"
 
 # Forge
 forge-fml-range = "[53,)"
 forge-range = "[53.0.0,)"
-forge = "53.0.8"
+forge = "53.0.19"
 forge-mc = "1.21.3-53.0.0"
 
 # Neoforge
 neoforge-loader-range = "[4,)"
 neoforge-range = "[21.3.4-beta,)"
-neoforge = "21.3.11-beta"
+neoforge = "21.3.31-beta"
 
 # Dependencies
 mixin = "0.8.7"
@@ -32,7 +32,7 @@ mixinextras = "0.3.5"
 mixinextras-range = "[0.3.5,)"
 
 # Plugins
-plugin-moddevgradle = "2.0.42-beta"
+plugin-moddevgradle = "2.0.44-beta"
 plugin-minotaur = "2.8.7"
 plugin-curseforge-gradle = "1.1.25"
 plugin-idea-ext = "1.1.8"
