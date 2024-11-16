@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.tslat.effectslib.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "tslateffectslib.refmap.json",
+  "mixins": [
+    "common.LivingEntityNeoForgeMixin"
+  ],
+  "client": [
+    "client.EffectsInInventoryMixin",
+    "client.GameRendererMixin"
+  ]
+}
