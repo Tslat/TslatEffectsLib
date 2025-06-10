@@ -38,7 +38,6 @@ public class PlayerMixin {
 	private float tel$handlePlayerDamage(Player victim, DamageSource damageSource, float damage) {
 		final List<Consumer<Float>> attackerCallbacks = new ObjectArrayList<>();
 		final List<Consumer<Float>> victimCallbacks = new ObjectArrayList<>();
-		final boolean bypassesEnchants = damageSource.is(DamageTypeTags.BYPASSES_ENCHANTMENTS);
 
 		if (damageSource.getEntity() instanceof LivingEntity attacker) {
 			for (MobEffectInstance instance : attacker.getActiveEffects()) {

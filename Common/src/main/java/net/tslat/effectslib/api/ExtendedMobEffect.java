@@ -89,7 +89,7 @@ public class ExtendedMobEffect extends MobEffect {
 	/**
 	 * Handle for when the effect is first applied to an entity. Useful for triggering additional effects or up-front additional handling.
 	 * @param effectInstance Effect instance for the effect. Marked with nullable so that the vanilla methods can be routed through for completeness
-	 * @param source The direct entity source of the effect, if applicable. E.G. The player drinking a potion, the {@link net.minecraft.world.entity.projectile.ThrownPotion} entity
+	 * @param source The direct entity source of the effect, if applicable. E.G. The player drinking a potion, the ThrownPotion entity
 	 * @param entity The entity the effect is applying to
 	 * @param amplifier The amplifier for the current effect instance. Included for compatibility with vanilla's methods
 	 */
