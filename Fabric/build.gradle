@@ -1,7 +1,7 @@
 plugins {
-    id 'fabric-loom' version '1.6.+'
+    id 'fabric-loom' version '1.10.+'
     id 'idea'
-    id 'io.github.CDAGaming.cursegradle' version '1.6.1'
+    id 'net.darkhax.curseforgegradle' version '1.1.26'
     id 'com.modrinth.minotaur' version '2.+'
 }
 
@@ -78,19 +78,17 @@ publishing {
     }
 }
 
-curseforge {
-    apiKey = System.getenv("CURSEFORGE_TOKEN")
+tasks.register("publicToCurseForge", net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+    group = "publishing"
+    apiToken = System.getenv("CURSEFORGE_TOKEN") ?: "Invalid/No API Token Found"
 
-    project {
-        id = curseforge_id
-        changelog = 'https://github.com/Tslat/TslatEffectsLib/commits/1.20'
-        releaseType = 'release'
-        addGameVersion minecraft_version
+    var mainFile = it.upload(curseforge_id, tasks.remapJar)
+    mainFile.releaseType = "release"
+    mainFile.addModLoader("Fabric")
+    mainFile.addGameVersion("1.20.1")
 
-        mainArtifact(remapJar) {
-            it.displayName = "${project.mod_name} Fabric ${project.minecraft_version}-${project.version}"
-        }
-    }
+    mainFile.changelog = 'https://github.com/Tslat/TslatEffectsLib/commits/1.20'
+    mainFile.displayName = "${project.mod_name} Fabric ${project.minecraft_version}-${project.version}"
 }
 
 modrinth {
