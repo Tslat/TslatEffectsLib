@@ -1,8 +1,10 @@
 package net.tslat.effectslib.networking;
 
+import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +26,9 @@ public final class TELNetworkingFabric implements TELNetworking {
      */
     @Override
     public <P extends MultiloaderPacket<P>> void registerPacketInternal(Class<P> messageType, Function<FriendlyByteBuf, P> decoder) {
-        TELFabricClient.registerPacket(messageType, decoder);
+        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
+            TELFabricClient.registerPacket(messageType, decoder);
+
         ServerPlayNetworking.registerGlobalReceiver(new ResourceLocation(TELConstants.MOD_ID, messageType.getName().toLowerCase(Locale.ROOT)), (server, player, packetListener, buffer, sender) -> decoder.apply(buffer).receiveMessage(player, server::execute));
     }
 
